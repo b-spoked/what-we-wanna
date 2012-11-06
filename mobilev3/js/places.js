@@ -57,33 +57,6 @@ $( function( $ ) {
 			}));
 		}
 	});
-
-	var TodosList =  Backbone.Collection.extend({
-		model : Place,
-		search : function(letters) {
-			if(letters == "")
-				return this;
-
-			var pattern = new RegExp(letters,"gi");
-			return _(this.filter( function(data) {
-				return pattern.test(data.get("name")) ||pattern.test(data.get("description"));
-			}));
-		}
-	});
-
-	var RecommendedList =  Backbone.Collection.extend({
-		model : Place,
-		search : function(letters) {
-			if(letters == "")
-				return this;
-
-			var pattern = new RegExp(letters,"gi");
-			return _(this.filter( function(data) {
-				return pattern.test(data.get("name")) ||pattern.test(data.get("description"));
-			}));
-		}
-	});
-
 	var Comment = Backbone.Model.extend({
 	});
 	var CommentList =  Backbone.Collection.extend({
@@ -101,20 +74,20 @@ $( function( $ ) {
 
 		defaults: {
 			id:0,
+			name: '',
 			loggedIn:false,
+			browsing:false,
 			updated_at : '',
 			latitude: 0,
 			longitude: 0,
 			address : '',
-			previousTypeFilter : '',
-			previousLocationFilter: '',
-			todos : new TodosList(),
-			recommended : new RecommendedList()
+			todos : new PlaceList(),
+			recommended : new PlaceList(),
+			created : new PlaceList()
 		},
-
 		initialize: function() {
-			_.bindAll(this);
-			if(this.get('loggedIn')) {
+			if(this.get('loggedIn')||this.get('browsing')){
+				_.bindAll(this);
 				if (navigator.geolocation) {
 					navigator.geolocation.getCurrentPosition(this.onSuccessUpdatePos,
 					this.onFailUpdatePos);
@@ -153,56 +126,6 @@ $( function( $ ) {
 			console.log(error);
 		}
 	});
-
-	var Browsing = Backbone.Model.extend({
-
-		defaults: {
-			latitude: 0,
-			longitude: 0,
-			address : ''
-		},
-
-		initialize: function() {
-			_.bindAll(this);
-			if (navigator.geolocation) {
-				navigator.geolocation.getCurrentPosition(this.onSuccessUpdatePos,
-				this.onFailUpdatePos);
-			}
-
-		},
-		onSuccessUpdatePos: function(position) {
-
-			this.set({
-				latitude: position.coords.latitude
-			});
-			console.log("lat: "+this.get("latitude"));
-			this.set({
-				longitude: position.coords.longitude
-			});
-			console.log("lng: "+this.get("longitude"));
-
-			var geocoder = new google.maps.Geocoder();
-			var latlng = new google.maps.LatLng(this.get("latitude"), this.get("longitude"));
-
-			geocoder.geocode({
-				'latLng': latlng
-			}, this.onSuccessUpdateAddress);
-		},
-		onSuccessUpdateAddress : function(results, status) {
-			if (status == google.maps.GeocoderStatus.OK) {
-				if (results[1]) {
-					console.log(results[1].formatted_address);
-					this.set({
-						address: results[1].formatted_address
-					});
-				}
-			}//Nothing to do otherwise
-		},
-		onFailUpdatePos : function(error) {
-			console.log(error);
-		}
-	});
-
 	var UserList =  Backbone.Collection.extend({
 		model: UserAccount,
 
@@ -214,21 +137,22 @@ $( function( $ ) {
 			}, {
 				keys : {
 					id: this.todos,
-					id: this.recommended
+					id: this.recommended,
+					id: this.created
 				}
 			});
 		},
-		loggedInUser : function() {
-			return this.where({
-				loggedIn: true
-			});
+		browsingUser : function() {
+			
+			return _.first(this.where({
+				browsing: true
+			}));
 		}
 	});
 
 	app.Places = new PlaceList();
-	app.UserData = new UserList();
-	app.BrowsingUser = new Browsing();
-
+	app.Users = new UserList();
+	app.Users.add(new UserAccount({browsing:true}));
 	app.PlaceView = Backbone.View.extend({
 
 		//... is a list tag.
@@ -318,14 +242,20 @@ $( function( $ ) {
 			alert('show comments');
 		},
 		addBookmark : function() {
-			var bookmarked = app.UserData.loggedInUser().get("todos");
+			var bookmarked = app.Users.browsingUser().get("todos");
 			bookmarked.add(this.model);
-			app.UserData.loggedInUser().set({
+			app.Users.browsingUser().set({
 				todos:bookmarked
 			});
 		},
 		addRecommendation : function() {
-			app.UserData.loggedInUser().recommended.create( this.model );
+			app.Users.browsingUser().recommended.create( this.model );
+			
+			var recommendation = app.Users.browsingUser().get("recommended");
+			recommendation.add(this.model);
+			app.Users.browsingUser().set({
+				recommended:recommendation
+			});
 		}
 	});
 
@@ -340,10 +270,10 @@ $( function( $ ) {
 
 		initialize: function() {
 			_.bindAll(this, "render");
-			app.BrowsingUser.bind('change:address', this.render);
+			app.Users.browsingUser().bind('change:address', this.render);
 		},
 		render: function() {
-			$(this.el).html(this.searchTemplate(app.BrowsingUser.toJSON()));
+			$(this.el).html(this.searchTemplate(app.Users.browsingUser().toJSON()));
 		},
 		close: function() {
 			this.remove();
@@ -356,7 +286,7 @@ $( function( $ ) {
 			var locationOfPlace = $("#locationfilter").val().trim();
 			var typeofPlace = $("#typefilter").val().trim();
 
-			var searchQuery = '#/'+locationOfPlace;
+			var searchQuery = '#results/'+locationOfPlace;
 			if(typeofPlace) {
 				searchQuery += '/'+typeofPlace;
 			}
@@ -377,12 +307,8 @@ $( function( $ ) {
 			$(this.el).html(this.userTemplate());
 			this.model.get("todos").on( 'add', this.addToDo, this );
 			this.model.get("todos").on( 'reset', this.addAllToDos, this );
-			//window.app.User.recommended.on( 'add', this.addRecommended, this );
-			//window.app.User.recommended.on( 'reset', this.addAllRecommended, this );
-
 		},
 		render: function() {
-
 			$(this.el).hide();
 		},
 		close: function() {
@@ -423,7 +349,6 @@ $( function( $ ) {
 
 	app.AddPlaceView = Backbone.View.extend({
 
-		// Cache the template function for a single item.
 		addPlaceTemplate: _.template( $('#add-template').html()),
 
 		render: function() {
@@ -438,6 +363,30 @@ $( function( $ ) {
 			$(this.el).show(500);
 		}
 	});
+	
+	app.SignupView = Backbone.View.extend({
+
+		signUpTemplate: _.template( $('#signup-template').html()),
+		events: {
+			'submit #signup-form': 'signup'
+		},
+
+		render: function() {
+			$(this.el).html(this.signUpTemplate());
+			$(this.el).hide();
+		},
+		close: function() {
+			this.remove();
+			this.unbind();
+		},
+		onShow: function() {
+			$(this.el).show(500);
+		},
+		signup: function(){
+			alert('signup');
+		}
+	});
+	
 
 	app.FoundPlacesView = Backbone.View.extend({
 
@@ -468,7 +417,7 @@ $( function( $ ) {
 		addOne: function( place ) {
 
 			place.set({
-				distance: this.distanceFromUser(place,app.UserData.get("latitude"),app.UserData.get("longitude"))
+				distance: this.distanceFromUser(place,app.Users.browsingUser().get("latitude"),app.Users.browsingUser().get("longitude"))
 			});
 			var view = new app.PlaceView({
 				model: place
@@ -522,39 +471,30 @@ $( function( $ ) {
 	var ApplicationRouter = Backbone.Router.extend({
 
 		routes: {
-			"":"showPlaces",
-			":location": "showResults",
-			":location/:type": "showResults",
-			//"places" : "showPlaces",
-			"user" : "showUser",
-			"addplace" : "showAdd"
+			"":"showSearch",
+			"results/:location": "showResults",
+			"results/:location/:type": "showResults",
+			"user/" : "showUser",
+			"addplace/" : "showAdd",
+			"signup/" : "showSignup"
 		},
 
-		showPlaces: function() {
-			//this.showSelected('');
-			//app.Places.locationOfPlace = location;
-			//app.Places.typeOfPlace = type;
-			//if(location==""&&type===""){
+		showSearch: function() {
 			RegionManager.show(new app.SearchPlacesView());
-			//}
 		},
 		showResults: function(location,type) {
 			app.Places.locationOfPlace = location;
 			app.Places.typeOfPlace = type;
-			//this.showSelected('places');
 			RegionManager.show(new app.FoundPlacesView());
 		},
-		/*showPlaces: function( ) {
-		 this.showSelected('places');
-		 RegionManager.show(new app.FoundPlacesView());
-		 },*/
 		showUser: function( ) {
-			//this.showSelected('user');
-			RegionManager.show(new app.UserView());
+			RegionManager.show(new app.UserView({model:app.Users.browsingUser()}));
 		},
 		showAdd: function( ) {
-			//this.showSelected('addplace');
 			RegionManager.show(new app.AddPlaceView());
+		},
+		showSignup: function( ) {
+			RegionManager.show(new app.SignupView());
 		},
 		showSelected: function(section) {
 			$('#filters li a')

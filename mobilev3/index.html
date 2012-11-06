@@ -6,7 +6,6 @@
 		<title>What We Wanna: Families</title>
 		<link rel="stylesheet" href="stylesheets/base.css">
 		<link rel="stylesheet" href="stylesheets/skeleton.css">
-		<!--<link rel="stylesheet" href="stylesheets/layout.css">-->
 		<link rel="stylesheet" href="stylesheets/font-awesome.css" />
 		<link rel="stylesheet" href="stylesheets/bootstrap.min.css" />
 	</head>
@@ -16,14 +15,13 @@
 			  <a class="brand" href="#"><i class="icon-pushpin"></i> What We Wanna</a>
 			  <ul id="filters" class="nav">
 				<li class="active"><a class="btn" href="#/">Places</a></li>
-				<!--<li><a class="btn" href="#/places">Places</a></li>-->
-				<li><a class="btn" href="#/user">User</a></li>
+				<li><a class="btn" href="#user/">User</a></li>
 			  </ul>
 				<form class="navbar-form pull-right">
 					<input type="text" id="userEmail" class="span2" placeholder="Email">
 					<input type="password" id="userPassword" class="span2" placeholder="Password">
 					<button type="submit" class="btn">Login</button>
-					<a href="#/signup" class="btn btn-primary">Signup</a>
+					<a href="#signup/" class="btn btn-success">Signup</a>
 				</form>
 			</div>
 		</div>
@@ -128,16 +126,18 @@
 						</div>
 					</div>
 					<div class="tab-pane" id="user-todos">
-						<blockquote><i class="icon-star"></i> Places To Do</blockquote>
+						<blockquote><i class="icon-star"></i> Places on the todo list</blockquote>
 						<input type="text" id="filter-todos" placeholder="filter to do's...">
 						<ul id="todos-list"></ul>
 					</div>
 					<div class="tab-pane" id="user-recommended">
-						<blockquote><i class="icon-thumbs-up"></i> Places Recommended</blockquote>
+						<blockquote><i class="icon-thumbs-up"></i> Places that have been recommended</blockquote>
+						<input type="text" id="filter-recommended" placeholder="filter recommended...">
 						<ul id="recommended-list"></ul>
 					</div>
 					<div class="tab-pane" id="user-owned">
-						<blockquote><i class="icon-plus"></i> Places Added</blockquote>
+						<blockquote><i class="icon-plus"></i> Places that have been added</blockquote>
+						<input type="text" id="filter-owned" placeholder="filter owned...">
 						<ul id="owned-list"></ul>
 					</div>
 				</div>
@@ -145,21 +145,27 @@
 		</script>
 		<script type="text/template" id="signup-template">
 		<div class="view">
-			<div class="section">
-				<div class="hero-unit">
-					<form class="form-inline" id="sigup" method="post">
-						<label for="signup-name">Name</label>
+			<div class="hero-unit">
+				<p>Signing up allows you to keep track of your todos, add places and recommend places for others</p>
+				<form class="form-horizontal" id="signup-form" method="post">
+					<div class="control-group">
 						<input type="text" name="signup-name" id="signup-name" value="" placeholder="Name"  />
-						<label for="signup-email">Email</label>
+					</div>
+					<div class="control-group">
 						<input type="email" name="signup-email" id="signup-email" value="" placeholder="Email"  />
-						<label for="signup-pw">Password</label>
+					</div>	
+					<div class="control-group">
 						<input type="password" name="signup-pw" id="signup-pw" value="" placeholder="Password"  />
-						<label class="checkbox">
-							<input type="checkbox" id="signup-newsletter"> Recieve Newsletter?
-						</label>
+					</div>
+					<div class="control-group">
+					<label class="checkbox">
+						<input type="checkbox" id="signup-newsletter"> Recieve Newsletter?
+					</label>
+					</div>
+					<div class="control-group">
 						<button type="submit" class="btn btn-primary btn-large">Create Account</button>
-					</form>
-				</div>
+					</div>
+				</form>
 			</div>
 		</div>	
 		</script>
@@ -206,7 +212,7 @@
 				<input type="text" id="filter-by" placeholder="filter places...">
 			</div>
 			<div class="ten columns omega">
-				<a class="btn" href="#/addplace"><i class="icon-plus"></i> Add New Place</a>
+				<a class="btn" href="#addplace/"><i class="icon-plus"></i> Add New Place</a>
 			</div>
 			<div class="clear" />
 			<ul id="places-list"></ul>
