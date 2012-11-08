@@ -58,11 +58,51 @@ class UserData
         }
     }
     
-    function getNotes($id, $installTableOnFailure = FALSE){
+    function getTodos($id, $installTableOnFailure = FALSE){
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
             
-            $stmt = $this->db->query("SELECT id, name, description,address,latitude,longitude,tags,rating FROM notes WHERE addedby = '{$id}'");
+           $queryString = "SELECT id, name, description,address,latitude,longitude FROM notes LEFT JOIN (user_todo_place) ON user_todo_place.todo_id =notes.id) WHERE user_todo_place.user_id = '{$id}'";
+	    
+            $stmt = $this->db->query($queryString);
+            return $this->id2int($stmt->fetchAll());
+            
+        } catch (PDOException $e) {
+            if (! $installTableOnFailure && $e->getCode() == '42S02') {
+//SQLSTATE[42S02]: Base table or view not found: 1146 Table 'authors' doesn't exist
+                $this->install();
+                return $this->get($id, TRUE);
+            }
+            throw new RestException(501, 'MySQL: ' . $e->getMessage());
+        }
+    }
+    
+    function getRecomended($id, $installTableOnFailure = FALSE){
+        $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        try {
+	    
+	    $queryString = "SELECT id, name, description,address,latitude,longitude FROM notes LEFT JOIN (user_recommended_place) ON user_recommended_place.recommended_id =notes.id) WHERE user_recommended_place.user_id = '{$id}'";
+	    
+            $stmt = $this->db->query($queryString);
+            return $this->id2int($stmt->fetchAll());
+            
+        } catch (PDOException $e) {
+            if (! $installTableOnFailure && $e->getCode() == '42S02') {
+//SQLSTATE[42S02]: Base table or view not found: 1146 Table 'authors' doesn't exist
+                $this->install();
+                return $this->get($id, TRUE);
+            }
+            throw new RestException(501, 'MySQL: ' . $e->getMessage());
+        }
+    }
+    
+    function getCreated($id, $installTableOnFailure = FALSE){
+        $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        try {
+            
+            $queryString = "SELECT id, name, description,address,latitude,longitude FROM notes LEFT JOIN (user_created_place) ON user_created_place.created_id =notes.id) WHERE user_created_place.user_id = '{$id}'";
+	    
+            $stmt = $this->db->query($queryString);
             return $this->id2int($stmt->fetchAll());
             
         } catch (PDOException $e) {
@@ -79,8 +119,9 @@ class UserData
     {
         $name = mysql_escape_string($rec['name']);
         $email = mysql_escape_string($rec['email']);
+        $password= mysql_escape_string($rec['password']);
 	
-        $sql = "INSERT INTO user (name,email) VALUES ('$name', '$email')";  
+        $sql = "INSERT INTO user (name,email,password) VALUES ('$name', '$email', SHA1('$password'))";  
         if (! $this->db->query($sql))
             return FALSE;
         return $this->get($this->db->lastInsertId());
@@ -91,7 +132,9 @@ class UserData
        $name = mysql_escape_string($rec['name']);
         $email = mysql_escape_string($rec['email']);
 	
-        $sql = "UPDATE user SET name = '$name', email ='$email'  WHERE id = $id";
+        $password= mysql_escape_string($rec['password']);
+	
+        $sql = "UPDATE user SET name = '$name', email ='$email', password = SHA1('$password') WHERE id = $id";
         if (! $this->db->query($sql))
             return FALSE;
         return $this->get($id);
@@ -125,12 +168,13 @@ class UserData
             id INT AUTO_INCREMENT PRIMARY KEY ,
             name TEXT NOT NULL ,
             email TEXT NOT NULL,
-            addedon DATE
+	    password VARCHAR(40),
+            updated_at DATE
         );");
 	
 	//rcommended places relationship
 	$this->db->exec(
-        "CREATE TABLE UserRecommendedPlace
+        "CREATE TABLE user_recommended_place
 	(
 	    user_id INT REFERENCES user (id),
 	    recommended_id INT REFERENCES notes (id),
@@ -138,7 +182,7 @@ class UserData
 	);");
 	//todo places relationship
 	$this->db->exec(
-        "CREATE TABLE UserToDoPlace
+        "CREATE TABLE user_todo_place
 	(
 	    user_id INT REFERENCES user (id),
 	    todo_id INT REFERENCES notes (id),
@@ -146,7 +190,7 @@ class UserData
 	);");
 	//create places relationship
 	$this->db->exec(
-        "CREATE TABLE UserCreatedPlace
+        "CREATE TABLE user_created_place
 	(
 	    user_id INT REFERENCES user (id),
 	    created_id INT REFERENCES notes (id),
@@ -154,9 +198,9 @@ class UserData
 	);");
 	//demo data
 	$this->db->exec(
-        "INSERT INTO user (name, email,addedon) VALUES ('Demo Dave','demo.dave@whatwewanna.co.nz',CURDATE());
-        INSERT INTO user (name, email,addedon) VALUES ('Demo Daisy','demo.daisey@whatwewanna.co.nz',CURDATE());
-	INSERT INTO user (name, email,addedon) VALUES ('Demo Donna','demo.donna@whatwewanna.co.nz',CURDATE());
+        "INSERT INTO user (name, email,updated_at) VALUES ('Demo Dave','demo.dave@whatwewanna.co.nz',CURDATE());
+        INSERT INTO user (name, email,updated_at) VALUES ('Demo Daisy','demo.daisey@whatwewanna.co.nz',CURDATE());
+	INSERT INTO user (name, email,updated_at) VALUES ('Demo Donna','demo.donna@whatwewanna.co.nz',CURDATE());
             ");
     }
 }

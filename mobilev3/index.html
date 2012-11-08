@@ -14,7 +14,8 @@
 			<div class="navbar-inner">
 			  <a class="brand" href="#"><i class="icon-pushpin"></i> What We Wanna</a>
 			  <ul id="filters" class="nav">
-				<li class="active"><a class="btn" href="#/">Places</a></li>
+				<li class="active"><a class="btn" href="#/">Search</a></li>
+				<li class="active"><a class="btn" href="#results/">Places</a></li>
 				<li><a class="btn" href="#user/">User</a></li>
 			  </ul>
 				<form class="navbar-form pull-right">
@@ -147,6 +148,7 @@
 		<div class="view">
 			<div class="hero-unit">
 				<p>Signing up allows you to keep track of your todos, add places and recommend places for others</p>
+				<div class="six columns alpha">
 				<form class="form-horizontal" id="signup-form" method="post">
 					<div class="control-group">
 						<input type="text" name="signup-name" id="signup-name" value="" placeholder="Name"  />
@@ -166,6 +168,16 @@
 						<button type="submit" class="btn btn-primary btn-large">Create Account</button>
 					</div>
 				</form>
+				</div>
+				<div class="six columns omega">
+				<h2>Our Promise</h2>
+				<ul>
+				<li>We will not allow others to use your email address.</li>
+				<li>You can remove your account and all your details will be deleted.</li>
+				<li>You will discover great places to share with your kids.</li>
+				</ul>
+				</div>
+				<div class="clear"></div>
 			</div>
 		</div>	
 		</script>
@@ -220,7 +232,6 @@
 		</script>
 		<!-- App Source -->	
 		<script src="js/jquery-1.8.2.min.js"></script>
-		<!--<script src="js/jquery-ui-1.8.7.min.js"></script>-->
 		<script src="js/bootstrap.min.js"></script>
 		<script src="js/underscore-min.js"></script>
 		<script src="js/backbone-min.js"></script>

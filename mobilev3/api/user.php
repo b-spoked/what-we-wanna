@@ -21,10 +21,24 @@ class User {
 	}
 	
 	/**
-	* @url GET /notes/:notes/
+	* @url GET /todos/:todos/
 	*/
-	function getNotes($id=NULL) {
-		return $this->userData->getNotes($id);
+	function getTodos($id=NULL) {
+		//return $this->userData->getTodos($id);
+	}
+	
+	/**
+	* @url GET /recommended/:recommended/
+	*/
+	function getRecommended($id=NULL) {
+		//return $this->userData->getRecommended($id);
+	}
+	
+	/**
+	* @url GET /created/:created/
+	*/
+	function getCreated($id=NULL) {
+		//return $this->userData->getCreated($id);
 	}
 	
 	function post($request_data=NULL) {
@@ -32,7 +46,7 @@ class User {
 	}
 	
 	function put($id=NULL, $request_data=NULL) {
-		return $this->userData->update($id, $this->_validate($request_data));
+		return $this->userData->update($id, $request_data);
 	}
 	function delete($id=NULL) {
 		return $this->userData->delete($id);

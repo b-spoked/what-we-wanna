@@ -110,7 +110,7 @@ class NoteData
         $rating = mysql_escape_string($rec['rating']);
         
         $addedby = 1;
-        $sql = "INSERT INTO notes (name,description,address,latitude,longitude, tags,rating,addedby,addedon) VALUES ('$name', '$description','$address','$latitude','$longitude','$tags','$rating','$addedby',CURDATE())";  
+        $sql = "INSERT INTO notes (name,description,address,latitude,longitude, tags,rating,user_id,updated_at) VALUES ('$name', '$description','$address','$latitude','$longitude','$tags','$rating','$addedby',CURDATE())";  
         if (! $this->db->query($sql))
             return FALSE;
         return $this->get($this->db->lastInsertId());
@@ -126,7 +126,7 @@ class NoteData
         $longitude = mysql_escape_string($rec['longitude']);
         $tags = mysql_escape_string($rec['tags']);
         $rating = mysql_escape_string($rec['rating']);
-        $sql = "UPDATE notes SET name = '$name', description ='$description', address ='$address', latitude ='$latitude',longitude ='$longitude', tags='$tags', rating='$rating'  WHERE id = $id";
+        $sql = "UPDATE notes SET name = '$name', description ='$description', address ='$address', latitude ='$latitude',longitude ='$longitude', tags='$tags', rating='$rating' updated_at=CURDATE() WHERE id = $id";
         if (! $this->db->query($sql))
             return FALSE;
         return $this->get($id);
@@ -175,20 +175,20 @@ class NoteData
             longitude TEXT NOT NULL,
             tags TEXT,
             rating INT,
-            userID INT,
-            addedon DATE
+            user_id INT,
+            updated_at DATE
         );");
         
         $this->db->exec(
-        "INSERT INTO notes (name, description,address,latitude,longitude,tags,rating,userID,addedon) VALUES ('Demo Beach Walk','Beach loop from the back beach ending at the playground','Back Beach Road, Tahunanui, Demovile','-41.285974','173.23166','Walk, Beach, Playground',3,1,CURDATE());
-        INSERT INTO notes (name, description,address,latitude,longitude,tags,rating,userID,addedon) VALUES ('Demo Valley Playground','A great little playground that has become a family fav with a new play house and good swings','Pioneer Park, Washington Valley, Demovile','-41.272525','173.275487','Playground, Swings',3,1,CURDATE());
-        INSERT INTO notes (name, description,address,latitude,longitude,tags,rating,userID,addedon) VALUES ('Demo Model Train Ride','A hit with the whole family are the great train rides at the modelers pond - they even have Thomas!','Modelers pond, Tahunanui, Demovile','-41.281806','173.24388','Trains, Beach',5,1,CURDATE());
-        INSERT INTO notes (name, description,address,latitude,longitude,tags,rating,userID,addedon) VALUES ('Demo Park','A good size park with lots of trees to climb and heaps of room to play cricket or kick around a ball','Back Beach Road, Tahunanui, Demovile','-41.285974','173.23166','Park, Field',3,1,CURDATE());
-        INSERT INTO notes (name, description,address,latitude,longitude,tags,rating,userID,addedon) VALUES ('Demo Toilets','Clean toilets with a change table for the little ones','Pioneer Park, Washington Valley, Demovile','-41.272525','173.275487','Toilets, Change table',3,1,CURDATE());
-        INSERT INTO notes (name, description,address,latitude,longitude,tags,rating,userID,addedon) VALUES ('Demo Park and Lake','Big park with trees, lots of grass a small lake and plenty of wildlife','Big Park, Tahunanui, Demovile','-41.281806','173.24388','Ducks, Lake, Park, Field',5,1,CURDATE());
-        INSERT INTO notes (name, description,address,latitude,longitude,tags,rating,userID,addedon) VALUES ('Demo Forrest Walk','Walk through native forrest - nice wide track that is flat and suited to buggy or kids on small bikes','Back Beach Road, Tahunanui, Demovile','-41.285974','173.23166','Walk, Bush',3,1,CURDATE());
-        INSERT INTO notes (name, description,address,latitude,longitude,tags,rating,userID,addedon) VALUES ('Demo Museum','This Museum is great on a rainey day (or any day actually) with exhibits aimed at the kids and that are interactive to keep them entertained.','Pioneer Park, Washington Valley, Demovile','-41.272525','173.275487','Rainy Day',3,1,CURDATE());
-        INSERT INTO notes (name, description,address,latitude,longitude,tags,rating,userID,addedon) VALUES ('Demo Big Playground','Playground that suits all ages (well under 10) with a seprate toddlers area. Swings, slides, climbing structures','Big Park, Tahunanui, Demovile','-41.281806','173.24388','Playground, Swings, Slide',5,1,CURDATE());
+        "INSERT INTO notes (name, description,address,latitude,longitude,tags,rating,user_id,updated_at) VALUES ('Demo Beach Walk','Beach loop from the back beach ending at the playground','Back Beach Road, Tahunanui, Demovile','-41.285974','173.23166','Walk, Beach, Playground',3,1,CURDATE());
+        INSERT INTO notes (name, description,address,latitude,longitude,tags,rating,user_id,updated_at) VALUES ('Demo Valley Playground','A great little playground that has become a family fav with a new play house and good swings','Pioneer Park, Washington Valley, Demovile','-41.272525','173.275487','Playground, Swings',3,1,CURDATE());
+        INSERT INTO notes (name, description,address,latitude,longitude,tags,rating,user_id,updated_at) VALUES ('Demo Model Train Ride','A hit with the whole family are the great train rides at the modelers pond - they even have Thomas!','Modelers pond, Tahunanui, Demovile','-41.281806','173.24388','Trains, Beach',5,1,CURDATE());
+        INSERT INTO notes (name, description,address,latitude,longitude,tags,rating,user_id,updated_at) VALUES ('Demo Park','A good size park with lots of trees to climb and heaps of room to play cricket or kick around a ball','Back Beach Road, Tahunanui, Demovile','-41.285974','173.23166','Park, Field',3,1,CURDATE());
+        INSERT INTO notes (name, description,address,latitude,longitude,tags,rating,user_id,updated_at) VALUES ('Demo Toilets','Clean toilets with a change table for the little ones','Pioneer Park, Washington Valley, Demovile','-41.272525','173.275487','Toilets, Change table',3,1,CURDATE());
+        INSERT INTO notes (name, description,address,latitude,longitude,tags,rating,user_id,updated_at) VALUES ('Demo Park and Lake','Big park with trees, lots of grass a small lake and plenty of wildlife','Big Park, Tahunanui, Demovile','-41.281806','173.24388','Ducks, Lake, Park, Field',5,1,CURDATE());
+        INSERT INTO notes (name, description,address,latitude,longitude,tags,rating,user_id,updated_at) VALUES ('Demo Forrest Walk','Walk through native forrest - nice wide track that is flat and suited to buggy or kids on small bikes','Back Beach Road, Tahunanui, Demovile','-41.285974','173.23166','Walk, Bush',3,1,CURDATE());
+        INSERT INTO notes (name, description,address,latitude,longitude,tags,rating,user_id,updated_at) VALUES ('Demo Museum','This Museum is great on a rainey day (or any day actually) with exhibits aimed at the kids and that are interactive to keep them entertained.','Pioneer Park, Washington Valley, Demovile','-41.272525','173.275487','Rainy Day',3,1,CURDATE());
+        INSERT INTO notes (name, description,address,latitude,longitude,tags,rating,user_id,updated_at) VALUES ('Demo Big Playground','Playground that suits all ages (well under 10) with a seprate toddlers area. Swings, slides, climbing structures','Big Park, Tahunanui, Demovile','-41.281806','173.24388','Playground, Swings, Slide',5,1,CURDATE());
             ");
     }
 }

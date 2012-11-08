@@ -6,7 +6,8 @@ var app = app || {};
 
 $( function( $ ) {
 
-	var Place = Backbone.Model.extend({
+	var Place = Backbone.extend({
+		
 		defaults: {
 			id:0,
 			updated_at : '',
@@ -70,7 +71,7 @@ $( function( $ ) {
 		}
 	});
 
-	var UserAccount = Backbone.Model.extend({
+	var User = Backbone.extend({
 
 		defaults: {
 			id:0,
@@ -80,12 +81,20 @@ $( function( $ ) {
 			updated_at : '',
 			latitude: 0,
 			longitude: 0,
-			address : '',
-			todos : new PlaceList(),
-			recommended : new PlaceList(),
-			created : new PlaceList()
+			address : ''
 		},
+		
 		initialize: function() {
+			
+			this.todos = new PlaceList;
+			this.todos.url = '/user/' + this.id + '/todos';
+			
+			this.recommended = new PlaceList;
+			this.recommended.url = '/user/' + this.id + '/recommended';
+			
+			this.created = new PlaceList;
+			this.created.url = '/user/' + this.id + '/created';
+			
 			if(this.get('loggedIn')||this.get('browsing')){
 				_.bindAll(this);
 				if (navigator.geolocation) {
@@ -132,15 +141,7 @@ $( function( $ ) {
 		url : '/api/index.php/user.json',
 
 		initialize : function() {
-			this.storage = new Offline.Storage('users', this, {
-				autoPush: true
-			}, {
-				keys : {
-					id: this.todos,
-					id: this.recommended,
-					id: this.created
-				}
-			});
+			this.storage = new Offline.Storage('users', this);
 		},
 		browsingUser : function() {
 			
@@ -472,6 +473,7 @@ $( function( $ ) {
 
 		routes: {
 			"":"showSearch",
+			"results/": "showResults",
 			"results/:location": "showResults",
 			"results/:location/:type": "showResults",
 			"user/" : "showUser",
