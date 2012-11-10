@@ -167,6 +167,6 @@ spl_autoload_register('spl_autoload');
 $r = new Restler(TRUE);
 $r->refreshCache();
 $r->setSupportedFormats('JsonFormat');
-$r->addAPIClass('Note');
+$r->addAPIClass('Place');
 $r->addAPIClass('User');
 $r->handle();

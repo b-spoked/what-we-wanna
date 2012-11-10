@@ -3,7 +3,7 @@ require_once 'config.php';
 class User {
 	public $userData;
 
-	static $FIELDS = array('name', 'email');
+	static $FIELDS = array('name', 'email','password');
 
 	function __construct(){
 		$this->userData = new UserData();

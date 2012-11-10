@@ -6,7 +6,7 @@ var app = app || {};
 
 $( function( $ ) {
 
-	var Place = Backbone.extend({
+	var Place = Backbone.Model.extend({
 		
 		defaults: {
 			id:0,
@@ -14,7 +14,7 @@ $( function( $ ) {
 			name: '',
 			description: '',
 			address: '',
-			rating: 3,
+			recommended: 0,
 			distance: '??',
 			latitude: 0,
 			longitude: 0
@@ -33,7 +33,7 @@ $( function( $ ) {
 		},
 		url: function () {
 
-			var placesUrl = '/api/index.php/note.json';
+			var placesUrl = '/api/index.php/place.json';
 
 			if(this.locationOfPlace=="" && this.typeOfPlace=="") {
 				return placesUrl;
@@ -58,12 +58,24 @@ $( function( $ ) {
 			}));
 		}
 	});
+	var RelatedPlaceList =  Backbone.Collection.extend({
+		model : Place,
+		search : function(letters) {
+			if(letters == "")
+				return this;
+
+			var pattern = new RegExp(letters,"gi");
+			return _(this.filter( function(data) {
+				return pattern.test(data.get("name")) ||pattern.test(data.get("description"));
+			}));
+		}
+	});
 	var Comment = Backbone.Model.extend({
 	});
 	var CommentList =  Backbone.Collection.extend({
 		placeId : "",
 		model: Comment,
-		url : '/api/index.php/note.json/comments/'+this.placeId,
+		url : '/api/index.php/place.json/comments/'+this.placeId,
 		initialize : function() {
 			this.storage = new Offline.Storage('www-comments', this, {
 				autoPush: true
@@ -71,7 +83,7 @@ $( function( $ ) {
 		}
 	});
 
-	var User = Backbone.extend({
+	var User = Backbone.Model.extend({
 
 		defaults: {
 			id:0,
@@ -81,19 +93,33 @@ $( function( $ ) {
 			updated_at : '',
 			latitude: 0,
 			longitude: 0,
-			address : ''
+			address : '',
+			todos: [],
+			recommended: [],
+			created: []
 		},
 		
 		initialize: function() {
 			
-			this.todos = new PlaceList;
-			this.todos.url = '/user/' + this.id + '/todos';
+			var self = this;
 			
-			this.recommended = new PlaceList;
-			this.recommended.url = '/user/' + this.id + '/recommended';
+			this.todos = new RelatedPlaceList(this.get('todos'));
+			this.todos.url = function () {
+				return self.url() + '/todos';
+			};
+			//this.todos.on("add", this.syncTodos);
 			
-			this.created = new PlaceList;
-			this.created.url = '/user/' + this.id + '/created';
+			this.recommended = new RelatedPlaceList(this.get('recommended'));
+			this.recommended.url = function () {
+				return self.url() + '/recommended';
+			};
+			//this.recommended.on("add", this.syncRecommended);
+			
+			this.created = new RelatedPlaceList(this.get('created'));
+			this.created.url = function () {
+				return self.url() + '/created';
+			};
+			//this.created.on("add", this.syncCreated);
 			
 			if(this.get('loggedIn')||this.get('browsing')){
 				_.bindAll(this);
@@ -103,6 +129,28 @@ $( function( $ ) {
 				}
 			}
 		},
+		
+		urlRoot: '/api/index.php/user.json/',
+		
+		syncTodos:function(){
+			//if(this.get('loggedIn')){
+				this.todos.storage.sync.push();
+			//}
+		},
+		
+		syncRecommended:function(){
+			if(this.get('loggedIn')){
+				this.recommended.storage.sync.push();
+			}
+		},
+		
+		syncCreated:function(){
+			if(this.get('loggedIn')){
+				this.created.storage.sync.push();
+			}
+		},
+		
+		
 		onSuccessUpdatePos: function(position) {
 
 			this.set({
@@ -136,24 +184,24 @@ $( function( $ ) {
 		}
 	});
 	var UserList =  Backbone.Collection.extend({
-		model: UserAccount,
-
-		url : '/api/index.php/user.json',
-
-		initialize : function() {
-			this.storage = new Offline.Storage('users', this);
-		},
+		model: User,
+		url:  '/api/index.php/user.json/',
 		browsingUser : function() {
 			
 			return _.first(this.where({
 				browsing: true
+			}));
+		},
+		loggedInUser : function() {
+			return _.first(this.where({
+				loggedIn: true
 			}));
 		}
 	});
 
 	app.Places = new PlaceList();
 	app.Users = new UserList();
-	app.Users.add(new UserAccount({browsing:true}));
+	app.Users.create(new User({browsing:true}));
 	app.PlaceView = Backbone.View.extend({
 
 		//... is a list tag.
@@ -243,20 +291,10 @@ $( function( $ ) {
 			alert('show comments');
 		},
 		addBookmark : function() {
-			var bookmarked = app.Users.browsingUser().get("todos");
-			bookmarked.add(this.model);
-			app.Users.browsingUser().set({
-				todos:bookmarked
-			});
+			app.Users.browsingUser().todos.add(new Place({sid: this.model.sid}));
 		},
 		addRecommendation : function() {
-			app.Users.browsingUser().recommended.create( this.model );
-			
-			var recommendation = app.Users.browsingUser().get("recommended");
-			recommendation.add(this.model);
-			app.Users.browsingUser().set({
-				recommended:recommendation
-			});
+			app.Users.browsingUser().recommended.add(new Place({sid: this.model.sid}));
 		}
 	});
 
@@ -301,13 +339,17 @@ $( function( $ ) {
 		userTemplate: _.template( $('#user-template').html()),
 
 		events: {
-			"keyup #filter-todos" : "searchToDos"
+			"keyup #filter-todos" : "searchToDos",
+			"keyup #filter-recommended" : "searchRecommended"
 		},
 
 		initialize: function() {
 			$(this.el).html(this.userTemplate());
-			this.model.get("todos").on( 'add', this.addToDo, this );
-			this.model.get("todos").on( 'reset', this.addAllToDos, this );
+			this.model.todos.on( 'add', this.addToDo, this );
+			this.model.todos.on( 'reset', this.addAllToDos, this );
+			
+			this.model.recommended.on( 'add', this.addRecommended, this );
+			this.model.recommended.on( 'reset', this.addAllRecommended, this );
 		},
 		render: function() {
 			$(this.el).hide();
@@ -329,22 +371,44 @@ $( function( $ ) {
 		addAllToDos: function(places) {
 
 			if(places == null) {
-				places = this.model.get("todos");
+				places = this.model.todos;
 			}
-
+			
 			this.$('#todos-list').html('');
 			places.each(this.addToDo, this);
+			
+		},
+		addRecommended: function( place ) {
+			var view = new app.PlaceView({
+				model: place
+			});
+			$('#recommended-list').append( view.render().el );
+		},
+		addAllRecommended: function(places) {
+
+			if(places == null) {
+				places = this.model.recommended;
+			}
+
+			this.$('#recommended-list').html('');
+			places.each(this.addRecommended, this);
+			
 		},
 		createOnEnter: function( e ) {
 			app.Places.create( this.newAttributes() );
 			this.form.reset();
 		},
 		loadResults: function () {
-			this.addAllToDos(this.model.get("todos"));
+			this.addAllToDos(this.model.todos);
+			this.addAllRecommended(this.model.recommended);
 		},
 		searchToDos: function(e) {
 			var letters = $("#filter-todos").val();
-			this.addAll(this.model.get("todos").search(letters));
+			this.addAll(this.model.todos.search(letters));
+		},
+		searchRecommended: function(e) {
+			var letters = $("#filter-recommended-").val();
+			this.addAll(this.model.recommended.search(letters));
 		}
 	});
 

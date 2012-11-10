@@ -1,0 +1,21 @@
+##open orchards
+
+http://www.topofthesouthmaps.co.nz/ArcGIS/services/TopoftheSouthMaps/MapServer/WFSServer?SERVICE=WFS&VERSION=1.1.0&REQUEST=GetFeature&TYPENAME=TopoftheSouthMaps:Recreation_-_Places_Of_Interest&srsName=EPSG:6.9:4326&Filter=<ogc:Filter><ogc:PropertyIsEqualTo><ogc:PropertyName>Type</ogc:PropertyName><ogc:Literal>>Open Orchard</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>
+ 
+## playgrounds
+
+http://www.topofthesouthmaps.co.nz/ArcGIS/services/TopoftheSouthMaps/MapServer/WFSServer?SERVICE=WFS&VERSION=1.1.0&REQUEST=GetFeature&TYPENAME=TopoftheSouthMaps:Recreation_-_Places_Of_Interest&srsName=EPSG:6.9:4326&Filter=<ogc:Filter><ogc:PropertyIsEqualTo><ogc:PropertyName>Type</ogc:PropertyName><ogc:Literal>Playground</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>
+ 
+## plublic toilets
+
+http://www.topofthesouthmaps.co.nz/ArcGIS/services/TopoftheSouthMaps/MapServer/WFSServer?SERVICE=WFS&VERSION=1.1.0&REQUEST=GetFeature&TYPENAME=TopoftheSouthMaps:Recreation_-_Places_Of_Interest&srsName=EPSG:6.9:4326&Filter=<ogc:Filter><ogc:PropertyIsEqualTo><ogc:PropertyName>Type</ogc:PropertyName><ogc:Literal>Public Toilet</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>
+ 
+
+##bus stops
+
+http://www.topofthesouthmaps.co.nz/ArcGIS/services/TopoftheSouthMaps/MapServer/WFSServer?SERVICE=WFS&VERSION=1.1.0&REQUEST=GetFeature&TYPENAME=TopoftheSouthMaps:Services_-_Bus_Stops&srsName=EPSG:6.9:4326&Filter=<ogc:Filter><ogc:PropertyIsEqualTo><ogc:PropertyName>BusStopType</ogc:PropertyName><ogc:Literal>BUS STOP</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>
+ 
+
+##walks (short walks that are easy and currently open)
+
+http://www.topofthesouthmaps.co.nz/ArcGIS/services/TopoftheSouthMaps/MapServer/WFSServer?SERVICE=WFS&VERSION=1.1.0&REQUEST=GetFeature&TYPENAME=TopoftheSouthMaps:Recreation_-_Tracks&srsName=EPSG:6.9:4326&Filter=<ogc:Filter><ogc:PropertyIsEqualTo><ogc:PropertyName>TrackType</ogc:PropertyName><ogc:Literal>Short Walk</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>TrackGradeDesc</ogc:PropertyName><ogc:Literal>Easy</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>TrackStatus</ogc:PropertyName><ogc:Literal>Operational</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>

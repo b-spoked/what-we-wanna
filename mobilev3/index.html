@@ -44,7 +44,7 @@
 					</div>
 					<div class="six columns omega">
 							<p><%= address %></p>
-							<p><em><%= rating %><i class="icon-star"></i></em></p>
+							<p><em><%= recommended %><i class="icon-thumbs-up"></i></em></p>
 							<p><em><strong><%= distance %>km</strong> away</em></p>
 					</div>
 					<div class="two columns">
@@ -72,17 +72,7 @@
 							<label for="edit-address">Tell people the address</label>
 							<input type="text" id="edit-address" name="edit-address" value="<%= address %>"/>
 							<input type="hidden" name="edit-latitude" id="edit-latitude" value="<%= latitude %>"/>
-							<input type="hidden" name="edit-longitude" id="edit-longitude" value="<%= longitude %>"/>
-							<label for="edit-tags">Tags to help classify</label>
-							<input type="text" name="tags" id="edit-tags" />
-							<label for="edit-rating">Rate it</label>
-							<select name="edit-rating" id="edit-rating">
-								<option <% if (rating==5) { %> selected="selected"<% } %> value="5">5. O-for-Awesome</option>
-								<option <% if (rating==4) { %> selected="selected"<% } %> value="4">4. Well worth it</option>
-								<option <% if (rating==3) { %> selected="selected"<% } %> value="3">3. Good enough</option>
-								<option <% if (rating==2) { %> selected="selected"<% } %> value="2">2. Ho hum</option>
-								<option <% if (rating==1) { %> selected="selected"<% } %> value="1">1. Stink</option>
-							</select>
+							<input type="hidden" name="edit-longitude" id="edit-longitude" value="<%= longitude %>"/>			
 						</div>
 						<div class="two columns">
 							<button id="submit" type="submit">Save Update</button>
@@ -186,26 +176,13 @@
 		<div class="hero-unit">
 			<p><i class="icon-check"></i> Add a new place so that others can enjoy it.</p>
 			<form id="addNoteForm" method="POST">
-				<div class="five columns">
+				<div class="two-third column alpha">
 					<label for="name">Give it a title</label>
 					<input type="text" name="name" id="name" value=""  placeholder="Title"/>	
 					<label for="description">Tell us about it</label>
 					<textarea name="description" id="description" placeholder="Description"></textarea>
 				</div>
-				<div class="five columns">
-					<label for="tags">Tags to help classify</label>
-					<input type="text" name="tags" id="tags" value=""  placeholder="Tags (seperate with a comma)" />
-					<label for="rating">Rate it</label>
-					<select name="rating" id="rating">
-						<option value="5">5. O-for-Awesome</option>
-						<option value="4">4. Well worth it</option>
-						<option value="3">3. Good enough</option>
-						<option value="2">2. Ho hum</option>
-						<option value="1">1. Stink</option>
-					</select>
-				</div>
-				
-				<div class="three columns">
+				<div class="on-third column omega">
 					<label for="address">Tell people the address</label>
 					<input type="text" id="address" name="address"/>
 					<input type="hidden" name="latitude" id="latitude" />

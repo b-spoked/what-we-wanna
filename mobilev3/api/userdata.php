@@ -26,7 +26,7 @@ class UserData
     {
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
-            $sql = 'SELECT * FROM user WHERE id = ' . mysql_escape_string(
+            $sql = 'SELECT name,email FROM user WHERE id = ' . mysql_escape_string(
             $id);
             return $this->id2int($this->db->query($sql)
                 ->fetch());
@@ -45,7 +45,7 @@ class UserData
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
             
-            $stmt = $this->db->query("SELECT * FROM user WHERE email = '{$email}'");
+            $stmt = $this->db->query("SELECT name FROM user WHERE email = '{$email}'");
             return $this->id2int($stmt->fetchAll());
             
         } catch (PDOException $e) {
@@ -62,7 +62,7 @@ class UserData
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
             
-           $queryString = "SELECT id, name, description,address,latitude,longitude FROM notes LEFT JOIN (user_todo_place) ON user_todo_place.todo_id =notes.id) WHERE user_todo_place.user_id = '{$id}'";
+           $queryString = "SELECT id, name, description,address,latitude,longitude, recommeded FROM place LEFT JOIN (user_todo_place) ON user_todo_place.todo_id =notes.id) WHERE user_todo_place.user_id = '{$id}'";
 	    
             $stmt = $this->db->query($queryString);
             return $this->id2int($stmt->fetchAll());
@@ -81,7 +81,7 @@ class UserData
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
 	    
-	    $queryString = "SELECT id, name, description,address,latitude,longitude FROM notes LEFT JOIN (user_recommended_place) ON user_recommended_place.recommended_id =notes.id) WHERE user_recommended_place.user_id = '{$id}'";
+	    $queryString = "SELECT id, name, description,address,latitude,longitude, recommeded FROM place LEFT JOIN (user_recommended_place) ON user_recommended_place.recommended_id =notes.id) WHERE user_recommended_place.user_id = '{$id}'";
 	    
             $stmt = $this->db->query($queryString);
             return $this->id2int($stmt->fetchAll());
@@ -100,7 +100,7 @@ class UserData
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
             
-            $queryString = "SELECT id, name, description,address,latitude,longitude FROM notes LEFT JOIN (user_created_place) ON user_created_place.created_id =notes.id) WHERE user_created_place.user_id = '{$id}'";
+            $queryString = "SELECT id, name, description,address,latitude,longitude,recommeded FROM place LEFT JOIN (user_created_place) ON user_created_place.created_id =notes.id) WHERE user_created_place.user_id = '{$id}'";
 	    
             $stmt = $this->db->query($queryString);
             return $this->id2int($stmt->fetchAll());
@@ -121,7 +121,7 @@ class UserData
         $email = mysql_escape_string($rec['email']);
         $password= mysql_escape_string($rec['password']);
 	
-        $sql = "INSERT INTO user (name,email,password) VALUES ('$name', '$email', SHA1('$password'))";  
+        $sql = "INSERT INTO user (name,email,password,updated_at) VALUES ('$name', '$email', SHA1('$password'),NOW())";  
         if (! $this->db->query($sql))
             return FALSE;
         return $this->get($this->db->lastInsertId());
@@ -129,12 +129,11 @@ class UserData
     
     function update ($id, $rec)
     {
-       $name = mysql_escape_string($rec['name']);
+	$name = mysql_escape_string($rec['name']);
         $email = mysql_escape_string($rec['email']);
-	
         $password= mysql_escape_string($rec['password']);
 	
-        $sql = "UPDATE user SET name = '$name', email ='$email', password = SHA1('$password') WHERE id = $id";
+        $sql = "UPDATE user SET name = '$name', email ='$email', password = SHA1('$password'), updated_at=NOW() WHERE id = $id";
         if (! $this->db->query($sql))
             return FALSE;
         return $this->get($id);
@@ -169,7 +168,7 @@ class UserData
             name TEXT NOT NULL ,
             email TEXT NOT NULL,
 	    password VARCHAR(40),
-            updated_at DATE
+            updated_at DATETIME
         );");
 	
 	//rcommended places relationship
@@ -177,7 +176,7 @@ class UserData
         "CREATE TABLE user_recommended_place
 	(
 	    user_id INT REFERENCES user (id),
-	    recommended_id INT REFERENCES notes (id),
+	    recommended_id INT REFERENCES place (id),
 	    PRIMARY KEY (user_id, recommended_id)
 	);");
 	//todo places relationship
@@ -185,7 +184,7 @@ class UserData
         "CREATE TABLE user_todo_place
 	(
 	    user_id INT REFERENCES user (id),
-	    todo_id INT REFERENCES notes (id),
+	    todo_id INT REFERENCES place (id),
 	    PRIMARY KEY (user_id, todo_id)
 	);");
 	//create places relationship
@@ -193,14 +192,14 @@ class UserData
         "CREATE TABLE user_created_place
 	(
 	    user_id INT REFERENCES user (id),
-	    created_id INT REFERENCES notes (id),
+	    created_id INT REFERENCES place (id),
 	    PRIMARY KEY (user_id, created_id)
 	);");
 	//demo data
 	$this->db->exec(
-        "INSERT INTO user (name, email,updated_at) VALUES ('Demo Dave','demo.dave@whatwewanna.co.nz',CURDATE());
-        INSERT INTO user (name, email,updated_at) VALUES ('Demo Daisy','demo.daisey@whatwewanna.co.nz',CURDATE());
-	INSERT INTO user (name, email,updated_at) VALUES ('Demo Donna','demo.donna@whatwewanna.co.nz',CURDATE());
+        "INSERT INTO user (name, email,updated_at) VALUES ('Demo Dave','demo.dave@whatwewanna.co.nz',NOW());
+        INSERT INTO user (name, email,updated_at) VALUES ('Demo Daisy','demo.daisey@whatwewanna.co.nz',NOW());
+	INSERT INTO user (name, email,updated_at) VALUES ('Demo Donna','demo.donna@whatwewanna.co.nz',NOW());
             ");
     }
 }

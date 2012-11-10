@@ -1,27 +1,18 @@
 <?php
 require_once 'config.php';
-class Note {
-	public $noteData;
+class Place {
+	public $placeData;
 	public $commentData;
 
-	static $FIELDS = array('name', 'description','address','latitude','longitude','tags','rating');
+	static $FIELDS = array('name', 'description','address','latitude','longitude','recommended');
 
 	function __construct(){
-		$this->noteData = new NoteData();
+		$this->placeData = new PlaceData();
 		$this->commentData = new CommentData();
 	}
 
 	function get($id=NULL) {
-		return is_null($id) ? $this->noteData->getAll() : $this->noteData->get($id);
-	}
-	
-	/**
-	* @url GET /tag/:tag/
-	*/
-	function getByTag($tag=NULL) {
-	    
-		return $this->noteData->getByTag($tag);
-	    
+		return is_null($id) ? $this->placeData->getAll() : $this->placeData->get($id);
 	}
 	
 	/**
@@ -29,16 +20,7 @@ class Note {
 	*/
 	function getByFilter($filters=NULL) {
 	    
-		return $this->noteData->getByFilter($filters);
-	}
-	
-	/**
-	* @url GET /date/:start/:finish/
-	*/
-	function getByDate($start=NULL,$finish=NULL) {
-	    
-		return $this->noteData->getByDate($start,$finish);
-	    
+		return $this->placeData->getByFilter($filters);
 	}
 	
 	/**
@@ -46,7 +28,7 @@ class Note {
 	*/
 	function putAddress($id=NULL,$address=NULL)
 	{    
-		return $this->noteData->updateAddress($id,$address);   
+		return $this->placeData->updateAddress($id,$address);   
 	}
 	
 	/**
@@ -66,18 +48,18 @@ class Note {
 	}
 	
 	function post($request_data=NULL) {
-		return $this->noteData->insert($this->_validate($request_data));
+		return $this->placeData->insert($this->_validate($request_data));
 	}
 	function put($id=NULL, $request_data=NULL) {
-		return $this->noteData->update($id, $this->_validate($request_data));
+		return $this->placeData->update($id, $this->_validate($request_data));
 	}
 	function delete($id=NULL) {
-		return $this->noteData->delete($id);
+		return $this->placeData->delete($id);
 	}
 
 	private function _validate($data){
 		$note=array();
-		foreach (Note::$FIELDS as $field) {
+		foreach (Place::$FIELDS as $field) {
 //you may also vaildate the data here
 			if(!isset($data[$field]))throw new RestException(417,"$field field missing");
 			$note[$field]=$data[$field];
