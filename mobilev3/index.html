@@ -10,24 +10,26 @@
 		<link rel="stylesheet" href="stylesheets/bootstrap.min.css" />
 	</head>
 	<body>
-		<div class="navbar">
+		<div class="navbar navbar-inverse">
 			<div class="navbar-inner">
-			  <a class="brand" href="#"><i class="icon-pushpin"></i> What We Wanna</a>
-			  <ul id="filters" class="nav">
-				<li class="active"><a class="btn" href="#/">Search</a></li>
-				<li class="active"><a class="btn" href="#results/">Places</a></li>
-				<li><a class="btn" href="#user/">User</a></li>
-			  </ul>
-				<form class="navbar-form pull-right">
-					<input type="text" id="userEmail" class="span2" placeholder="Email">
-					<input type="password" id="userPassword" class="span2" placeholder="Password">
-					<button type="submit" class="btn">Login</button>
-					<a href="#signup/" class="btn btn-success">Signup</a>
-				</form>
+				<div class="container">
+					<a class="brand" href="#/"><i class="icon-pushpin"></i> What We Wanna</a>
+					<ul class="nav">
+						<li class="active"><a href="#/">Search</a></li>
+						<li><a href="#results/">Places</a></li>
+						<li><a href="#user/">User</a></li>
+					</ul>
+					<form class="navbar-form pull-right">
+							<input type="text" id="userEmail" class="span2" placeholder="Email">
+							<input type="password" id="userPassword" class="span2" placeholder="Password">
+							<button type="submit" class="btn">Sign-In</button>
+							<a href="#signup/" class="btn">Sign-Up</a>
+					</form>
+				</div>
 			</div>
 		</div>
 		<div class="container">
-			<div class="sixteen columns">
+			<div class="sixteen columns">	
 					<section id="main">			  
 					</section>
 			</div>
@@ -60,26 +62,8 @@
 				</div>
 				<div id="comments_<%= id %>" class="sixteen columns alpha" style="display:none;">
 				</div>
-				<div id="edit_<%= id %>" class="sixteen columns alpha" style="display:none;">
-					<form id="edit-form" method="POST">
-						<div class="six columns alpha">
-							<label for="edit-name">Give it a title</label>
-							<input type="text" name="edit-name" id="edit-name" value="<%= name %>"/>	
-							<label for="edit-description">Tell us about it</label>
-							<textarea name="edit-description" id="edit-description"><%= description %></textarea>
-						</div>
-						<div class="six columns omega">
-							<label for="edit-address">Tell people the address</label>
-							<input type="text" id="edit-address" name="edit-address" value="<%= address %>"/>
-							<input type="hidden" name="edit-latitude" id="edit-latitude" value="<%= latitude %>"/>
-							<input type="hidden" name="edit-longitude" id="edit-longitude" value="<%= longitude %>"/>			
-						</div>
-						<div class="two columns">
-							<button id="submit" type="submit">Save Update</button>
-						</div>
-					</form>
-				</div>
 			</div>
+			<div class="clear"></div>
 			<hr />
 		</script>
 		<script type="text/template" id="search-template">

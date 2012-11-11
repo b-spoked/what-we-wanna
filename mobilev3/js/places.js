@@ -99,25 +99,27 @@ $( function( $ ) {
 			created: []
 		},
 		
+		url: '/api/index.php/user.json/',
+		
 		initialize: function() {
 			
 			var self = this;
 			
 			this.todos = new RelatedPlaceList(this.get('todos'));
 			this.todos.url = function () {
-				return self.url() + '/todos';
+				return self.url + '/todos/'+this.get('sid');
 			};
 			//this.todos.on("add", this.syncTodos);
 			
 			this.recommended = new RelatedPlaceList(this.get('recommended'));
 			this.recommended.url = function () {
-				return self.url() + '/recommended';
+				return self.url + '/recommended/'+this.get('sid');
 			};
 			//this.recommended.on("add", this.syncRecommended);
 			
 			this.created = new RelatedPlaceList(this.get('created'));
 			this.created.url = function () {
-				return self.url() + '/created';
+				return self.url + '/created/'+this.get('sid');
 			};
 			//this.created.on("add", this.syncCreated);
 			
@@ -130,12 +132,10 @@ $( function( $ ) {
 			}
 		},
 		
-		urlRoot: '/api/index.php/user.json/',
-		
 		syncTodos:function(){
-			//if(this.get('loggedIn')){
+			if(this.get('loggedIn')){
 				this.todos.storage.sync.push();
-			//}
+			}
 		},
 		
 		syncRecommended:function(){
@@ -149,7 +149,6 @@ $( function( $ ) {
 				this.created.storage.sync.push();
 			}
 		},
-		
 		
 		onSuccessUpdatePos: function(position) {
 
@@ -183,25 +182,8 @@ $( function( $ ) {
 			console.log(error);
 		}
 	});
-	var UserList =  Backbone.Collection.extend({
-		model: User,
-		url:  '/api/index.php/user.json/',
-		browsingUser : function() {
-			
-			return _.first(this.where({
-				browsing: true
-			}));
-		},
-		loggedInUser : function() {
-			return _.first(this.where({
-				loggedIn: true
-			}));
-		}
-	});
-
 	app.Places = new PlaceList();
-	app.Users = new UserList();
-	app.Users.create(new User({browsing:true}));
+	app.BrowsingUser = new User({browsing:true});
 	app.PlaceView = Backbone.View.extend({
 
 		//... is a list tag.
@@ -291,10 +273,10 @@ $( function( $ ) {
 			alert('show comments');
 		},
 		addBookmark : function() {
-			app.Users.browsingUser().todos.add(new Place({sid: this.model.sid}));
+			app.BrowsingUser.todos.add(new Place({sid: this.model.get('sid')}));
 		},
 		addRecommendation : function() {
-			app.Users.browsingUser().recommended.add(new Place({sid: this.model.sid}));
+			app.BrowsingUser.recommended.add(new Place({sid: this.model.get('sid')}));
 		}
 	});
 
@@ -309,10 +291,10 @@ $( function( $ ) {
 
 		initialize: function() {
 			_.bindAll(this, "render");
-			app.Users.browsingUser().bind('change:address', this.render);
+			app.BrowsingUser.bind('change:address', this.render);
 		},
 		render: function() {
-			$(this.el).html(this.searchTemplate(app.Users.browsingUser().toJSON()));
+			$(this.el).html(this.searchTemplate(app.BrowsingUser.toJSON()));
 		},
 		close: function() {
 			this.remove();
@@ -399,6 +381,10 @@ $( function( $ ) {
 			this.form.reset();
 		},
 		loadResults: function () {
+			
+			this.model.todos.fetch();
+			this.model.recommended.fetch();
+			
 			this.addAllToDos(this.model.todos);
 			this.addAllRecommended(this.model.recommended);
 		},
@@ -482,7 +468,7 @@ $( function( $ ) {
 		addOne: function( place ) {
 
 			place.set({
-				distance: this.distanceFromUser(place,app.Users.browsingUser().get("latitude"),app.Users.browsingUser().get("longitude"))
+				distance: this.distanceFromUser(place,app.BrowsingUser.get("latitude"),app.BrowsingUser.get("longitude"))
 			});
 			var view = new app.PlaceView({
 				model: place
@@ -541,6 +527,7 @@ $( function( $ ) {
 			"results/:location": "showResults",
 			"results/:location/:type": "showResults",
 			"user/" : "showUser",
+			"user/:id" : "showUser",
 			"addplace/" : "showAdd",
 			"signup/" : "showSignup"
 		},
@@ -552,21 +539,23 @@ $( function( $ ) {
 			app.Places.locationOfPlace = location;
 			app.Places.typeOfPlace = type;
 			RegionManager.show(new app.FoundPlacesView());
+			
 		},
-		showUser: function( ) {
-			RegionManager.show(new app.UserView({model:app.Users.browsingUser()}));
+		showUser: function(id) {
+			if(id){
+				var UserToView = new User({sid:id});
+				RegionManager.show(new app.UserView({model:UserToView}));
+			}else{
+				RegionManager.show(new app.UserView({model:app.BrowsingUser}));
+			}
+			
+			
 		},
 		showAdd: function( ) {
 			RegionManager.show(new app.AddPlaceView());
 		},
 		showSignup: function( ) {
 			RegionManager.show(new app.SignupView());
-		},
-		showSelected: function(section) {
-			$('#filters li a')
-			.removeClass('selected')
-			.filter('[href="#/' + ( section || '' ) + '"]')
-			.addClass('selected');
 		}
 	});
 

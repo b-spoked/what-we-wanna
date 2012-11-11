@@ -21,21 +21,21 @@ class User {
 	}
 	
 	/**
-	* @url GET /todos/:todos/
+	* @url GET /todos/:id/
 	*/
 	function getTodos($id=NULL) {
 		//return $this->userData->getTodos($id);
 	}
 	
 	/**
-	* @url GET /recommended/:recommended/
+	* @url GET /recommended/:id/
 	*/
 	function getRecommended($id=NULL) {
 		//return $this->userData->getRecommended($id);
 	}
 	
 	/**
-	* @url GET /created/:created/
+	* @url GET /created/:id/
 	*/
 	function getCreated($id=NULL) {
 		//return $this->userData->getCreated($id);
