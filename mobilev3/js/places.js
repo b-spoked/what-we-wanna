@@ -107,19 +107,19 @@ $( function( $ ) {
 			
 			this.todos = new RelatedPlaceList(this.get('todos'));
 			this.todos.url = function () {
-				return self.url + '/todos/'+this.get('sid');
+				return self.url + 'todos/'+self.get('sid');
 			};
 			//this.todos.on("add", this.syncTodos);
 			
 			this.recommended = new RelatedPlaceList(this.get('recommended'));
 			this.recommended.url = function () {
-				return self.url + '/recommended/'+this.get('sid');
+				return self.url + 'recommended/'+self.get('sid');
 			};
 			//this.recommended.on("add", this.syncRecommended);
 			
 			this.created = new RelatedPlaceList(this.get('created'));
 			this.created.url = function () {
-				return self.url + '/created/'+this.get('sid');
+				return self.url + 'created/'+self.get('sid');
 			};
 			//this.created.on("add", this.syncCreated);
 			
