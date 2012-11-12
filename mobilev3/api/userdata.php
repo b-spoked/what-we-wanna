@@ -52,17 +52,34 @@ class UserData
             if (! $installTableOnFailure && $e->getCode() == '42S02') {
 //SQLSTATE[42S02]: Base table or view not found: 1146 Table 'authors' doesn't exist
                 $this->install();
-                return $this->get($id, TRUE);
+                return $this->getByEmail($email, TRUE);
             }
             throw new RestException(501, 'MySQL: ' . $e->getMessage());
         }
     }
     
+   function login($email,$pw, $installTableOnFailure = FALSE){
+        $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        try {
+            
+            $stmt = $this->db->query("SELECT id FROM user WHERE email = '{$email}' AND password='SHA1({$pw})'");
+            return $this->id2int($this->db->query($stmt)->fetch());
+            
+        } catch (PDOException $e) {
+            if (! $installTableOnFailure && $e->getCode() == '42S02') {
+//SQLSTATE[42S02]: Base table or view not found: 1146 Table 'authors' doesn't exist
+                $this->install();
+                return $this->login($email,$pw, TRUE);
+            }
+            throw new RestException(501, 'MySQL: ' . $e->getMessage());
+        }
+    }	
+    
     function getTodos($id, $installTableOnFailure = FALSE){
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
             
-           $queryString = "SELECT id, name, description,address,latitude,longitude, recommeded FROM place LEFT JOIN (user_todo_place) ON user_todo_place.todo_id =notes.id) WHERE user_todo_place.user_id = '{$id}'";
+           $queryString = "SELECT id, name, description, address, latitude, longitude, recommeded FROM place LEFT JOIN (user_todo_place) ON user_todo_place.todo_id =notes.id) WHERE user_todo_place.user_id = '{$id}'";
 	    
             $stmt = $this->db->query($queryString);
             return $this->id2int($stmt->fetchAll());
@@ -71,7 +88,7 @@ class UserData
             if (! $installTableOnFailure && $e->getCode() == '42S02') {
 //SQLSTATE[42S02]: Base table or view not found: 1146 Table 'authors' doesn't exist
                 $this->install();
-                return $this->get($id, TRUE);
+                return $this->getTodos($id, TRUE);
             }
             throw new RestException(501, 'MySQL: ' . $e->getMessage());
         }
@@ -81,7 +98,7 @@ class UserData
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
 	    
-	    $queryString = "SELECT id, name, description,address,latitude,longitude, recommeded FROM place LEFT JOIN (user_recommended_place) ON user_recommended_place.recommended_id =notes.id) WHERE user_recommended_place.user_id = '{$id}'";
+	    $queryString = "SELECT id, name, description, address, latitude, longitude, recommeded FROM place LEFT JOIN (user_recommended_place) ON user_recommended_place.recommended_id =notes.id) WHERE user_recommended_place.user_id = '{$id}'";
 	    
             $stmt = $this->db->query($queryString);
             return $this->id2int($stmt->fetchAll());
@@ -90,7 +107,7 @@ class UserData
             if (! $installTableOnFailure && $e->getCode() == '42S02') {
 //SQLSTATE[42S02]: Base table or view not found: 1146 Table 'authors' doesn't exist
                 $this->install();
-                return $this->get($id, TRUE);
+                return $this->getRecomended($id, TRUE);
             }
             throw new RestException(501, 'MySQL: ' . $e->getMessage());
         }
@@ -100,7 +117,7 @@ class UserData
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
             
-            $queryString = "SELECT id, name, description,address,latitude,longitude,recommeded FROM place LEFT JOIN (user_created_place) ON user_created_place.created_id =notes.id) WHERE user_created_place.user_id = '{$id}'";
+            $queryString = "SELECT id, name, description, address, latitude, longitude, recommeded FROM place LEFT JOIN (user_created_place) ON user_created_place.created_id =notes.id) WHERE user_created_place.user_id = '{$id}'";
 	    
             $stmt = $this->db->query($queryString);
             return $this->id2int($stmt->fetchAll());
@@ -109,7 +126,7 @@ class UserData
             if (! $installTableOnFailure && $e->getCode() == '42S02') {
 //SQLSTATE[42S02]: Base table or view not found: 1146 Table 'authors' doesn't exist
                 $this->install();
-                return $this->get($id, TRUE);
+                return $this->getCreated($id, TRUE);
             }
             throw new RestException(501, 'MySQL: ' . $e->getMessage());
         }

@@ -13,6 +13,10 @@ class User {
 		return $this->userData->get($id) ;
 	}
 	
+	function login(){
+		return $this->userData->login($email,$pw);
+	}
+	
 	/**
 	* @url GET /email/:email/
 	*/

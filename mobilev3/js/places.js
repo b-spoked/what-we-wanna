@@ -132,6 +132,30 @@ $( function( $ ) {
 			}
 		},
 		
+		events: {
+			'submit #login-form' : 'attemptLogin'
+		},
+		
+		attemptLogin: function(e){
+			
+			e.preventDefault();
+			
+			var loginData = $("#login-form").serialize();
+			
+			console.log(loginData);
+			
+			var loginForm = $.ajax({
+				type: "POST",
+				url: "/api/index.php/user.json/login",
+				dataType: "JSON",
+				data: loginData
+			});
+				  
+			signForm.done(function(response){
+				this.set({loggedIn:response})
+			});
+		},
+		
 		syncTodos:function(){
 			if(this.get('loggedIn')){
 				this.todos.storage.sync.push();
