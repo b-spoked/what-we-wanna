@@ -137,8 +137,9 @@ class UserData
         $name = mysql_escape_string($rec['name']);
         $email = mysql_escape_string($rec['email']);
         $password= mysql_escape_string($rec['password']);
+        $newsletter= mysql_escape_string($rec['newsletter']);
 	
-        $sql = "INSERT INTO user (name,email,password,updated_at) VALUES ('$name', '$email', SHA1('$password'),NOW())";  
+        $sql = "INSERT INTO user (name,email,newsletter,password,updated_at) VALUES ('$name', '$email',' $newsletter', SHA1('$password'),NOW())";  
         if (! $this->db->query($sql))
             return FALSE;
         return $this->get($this->db->lastInsertId());
@@ -149,8 +150,9 @@ class UserData
 	$name = mysql_escape_string($rec['name']);
         $email = mysql_escape_string($rec['email']);
         $password= mysql_escape_string($rec['password']);
+        $newsletter= mysql_escape_string($rec['newsletter']);
 	
-        $sql = "UPDATE user SET name = '$name', email ='$email', password = SHA1('$password'), updated_at=NOW() WHERE id = $id";
+        $sql = "UPDATE user SET name = '$name', email ='$email', newsletter ='$newsletter',password = SHA1('$password'), updated_at=NOW() WHERE id = $id";
         if (! $this->db->query($sql))
             return FALSE;
         return $this->get($id);
@@ -184,6 +186,7 @@ class UserData
             id INT AUTO_INCREMENT PRIMARY KEY ,
             name TEXT NOT NULL ,
             email TEXT NOT NULL,
+	    newsletter Boolean,
 	    password VARCHAR(40),
             updated_at DATETIME
         );");
@@ -214,9 +217,9 @@ class UserData
 	);");
 	//demo data
 	$this->db->exec(
-        "INSERT INTO user (name, email,updated_at) VALUES ('Demo Dave','demo.dave@whatwewanna.co.nz',NOW());
-        INSERT INTO user (name, email,updated_at) VALUES ('Demo Daisy','demo.daisey@whatwewanna.co.nz',NOW());
-	INSERT INTO user (name, email,updated_at) VALUES ('Demo Donna','demo.donna@whatwewanna.co.nz',NOW());
+        "INSERT INTO user (name, email,password, newsletter,updated_at) VALUES ('Demo Dave','demo.dave@whatwewanna.co.nz','test123',0,NOW());
+        INSERT INTO user (name, email,password, newsletter,updated_at) VALUES ('Demo Daisy','demo.daisey@whatwewanna.co.nz','test123',1,NOW());
+	INSERT INTO user (name, email,password, newsletter,updated_at) VALUES ('Demo Donna','demo.donna@whatwewanna.co.nz','test123,1,NOW());
             ");
     }
 }

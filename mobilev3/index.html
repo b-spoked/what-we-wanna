@@ -117,56 +117,65 @@
 		</script>
 		<script type="text/template" id="signup-template">
 		<div class="view">
-			<div class="hero-unit">
-				
-				<div class="six columns alpha">
-				<form class="form-horizontal" id="signin-form" method="post">
-					
-					<div class="control-group">
-						<input type="email" name="signin-email" id="signin-email" value="" placeholder="Email"  />
-					</div>	
-					<div class="control-group">
-						<input type="password" name="signin-pw" id="signin-pw" value="" placeholder="Password"  />
+			<ul class="nav nav-tabs">
+				<li class="active"><a data-toggle="tab" href="#sign-in-tab">Sign In</a></li>
+				<li><a data-toggle="tab" href="#sign-up-tab">Sign Up</a></li>
+			</ul>	
+			<div class="tab-content">
+				<div class="tab-pane active" id="sign-in-tab">
+					<div class="hero-unit">
+						<form class="form-horizontal" id="signin-form" method="post">
+							<h2>Account Sign-In</h2>
+							<div class="control-group">
+								<input type="email" name="signin-email" id="signin-email" value="" placeholder="Email"  />
+							</div>	
+							<div class="control-group">
+								<input type="password" name="signin-pw" id="signin-pw" value="" placeholder="Password"  />
+							</div>
+							<div class="control-group">
+								<button type="submit" class="btn btn-success btn-large">Sign In</button>
+							</div>
+						</form>
 					</div>
-					<div class="control-group">
-						<button type="submit" class="btn btn-success btn-large">Sign In</button>
-					</div>
-				</form>
 				</div>
-				<div class="six columns omega">
-					<h2>No Account? Sign-Up</h2>
-					<p>Signing up allows you to keep track of your todos, add places and recommend places for others</p>
-					<form class="form-horizontal" id="signup-form" method="post">
-					<div class="control-group">
-						<input type="text" name="signup-name" id="signup-name" value="" placeholder="Name"  />
+				<div class="tab-pane" id="sign-up-tab">
+					<div class="hero-unit">
+						<div class="six columns alpha">
+							<h2>Sign-Up</h2>
+							<form class="form-horizontal" id="signup-form" method="post">
+								<div class="control-group">
+									<input type="text" name="signup-name" id="signup-name" value="" placeholder="Name"  />
+								</div>
+								<div class="control-group">
+									<input type="email" name="signup-email" id="signup-email" value="" placeholder="Email"  />
+								</div>	
+								<div class="control-group">
+									<input type="password" name="signup-pw" id="signup-pw" value="" placeholder="Password"  />
+								</div>
+								<div class="control-group">
+									<label class="checkbox">
+										<input type="checkbox" id="signup-newsletter"> Recieve Newsletter?
+									</label>
+								</div>
+								<div class="control-group">
+									<button type="submit" class="btn btn-primary btn-large">Create Account</button>
+								</div>
+							</form>
+						</div>
+						<div class="six columns alpha">
+							<h2>Signing up for your free account allows you to</h2>
+							<ul>
+								<li><p><i class="icon-ok"></i> Keep track of your todo list of places you want to go.</p></li>
+								<li><p><i class="icon-ok"></i> Recommend places for other users.</p></li>
+								<li><p><i class="icon-ok"></i> Add places that you know others will love.</p></li>
+							</ul>
+						</div>
+						<div class="clear"></div>
 					</div>
-					<div class="control-group">
-						<input type="email" name="signup-email" id="signup-email" value="" placeholder="Email"  />
-					</div>	
-					<div class="control-group">
-						<input type="password" name="signup-pw" id="signup-pw" value="" placeholder="Password"  />
-					</div>
-					<div class="control-group">
-					<label class="checkbox">
-						<input type="checkbox" id="signup-newsletter"> Recieve Newsletter?
-					</label>
-					</div>
-					<div class="control-group">
-						<button type="submit" class="btn btn-primary btn-large">Create Account</button>
-					</div>
-					</form>
-					<h2>Our Promise</h2>
-					<ul>
-						<li>We will not allow others to use your email address.</li>
-						<li>You can remove your account and all your details will be deleted.</li>
-						<li>You will discover great places to share with your kids.</li>
-					</ul>
 				</div>
-				<div class="clear"></div>
-			</div>
-		</div>	
+			</div>	
+		</div>
 		</script>
-		
 		<script type="text/template" id="add-template">
 		<div class="view">
 		<div class="hero-unit">

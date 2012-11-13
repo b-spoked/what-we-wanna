@@ -132,29 +132,6 @@ $( function( $ ) {
 			}
 		},
 		
-		events: {
-			'submit #login-form' : 'attemptLogin'
-		},
-		
-		attemptLogin: function(e){
-			
-			e.preventDefault();
-			
-			var loginData = $("#login-form").serialize();
-			
-			console.log(loginData);
-			
-			var loginForm = $.ajax({
-				type: "POST",
-				url: "/api/index.php/user.json/login",
-				dataType: "JSON",
-				data: loginData
-			});
-				  
-			signForm.done(function(response){
-				this.set({loggedIn:response})
-			});
-		},
 		
 		syncTodos:function(){
 			if(this.get('loggedIn')){
@@ -443,7 +420,8 @@ $( function( $ ) {
 
 		signUpTemplate: _.template( $('#signup-template').html()),
 		events: {
-			'submit #signup-form': 'signup'
+			'submit #signup-form': 'signup',
+			'submit #signin-form': 'signin'
 		},
 
 		render: function() {
@@ -457,8 +435,41 @@ $( function( $ ) {
 		onShow: function() {
 			$(this.el).show(500);
 		},
-		signup: function(){
-			alert('signup');
+		signup: function(e){
+			e.preventDefault();
+			
+			var signUpData = $("#signup-form").serialize();
+			
+			console.log(signUpData);
+			
+			var loginForm = $.ajax({
+				type: "POST",
+				url: "/api/index.php/user.json/login",
+				dataType: "JSON",
+				data: signUpData
+			});
+				  
+			signForm.done(function(response){
+				app.BrowsingUser.set({loggedIn:true})
+			});
+		},
+		signin: function(e){
+			e.preventDefault();
+			
+			var loginData = $("#signin-form").serialize();
+			
+			console.log(loginData);
+			
+			var loginForm = $.ajax({
+				type: "POST",
+				url: "/api/index.php/user.json/login",
+				dataType: "JSON",
+				data: loginData
+			});
+				  
+			signForm.done(function(response){
+				app.BrowsingUser.set({loggedIn:true})
+			});
 		}
 	});
 	
