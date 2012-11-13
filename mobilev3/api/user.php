@@ -13,7 +13,14 @@ class User {
 		return $this->userData->get($id) ;
 	}
 	
-	function login(){
+	/**
+	* @url POST /login/
+	*/
+	function login($request_data=NULL){
+		
+		$email = mysql_escape_string($request_data['email']);
+		$pw = mysql_escape_string($request_data['password']);
+		
 		return $this->userData->login($email,$pw);
 	}
 	
@@ -28,21 +35,21 @@ class User {
 	* @url GET /todos/:id/
 	*/
 	function getTodos($id=NULL) {
-		//return $this->userData->getTodos($id);
+		return $this->userData->getTodos($id);
 	}
 	
 	/**
 	* @url GET /recommended/:id/
 	*/
 	function getRecommended($id=NULL) {
-		//return $this->userData->getRecommended($id);
+		return $this->userData->getRecommended($id);
 	}
 	
 	/**
 	* @url GET /created/:id/
 	*/
 	function getCreated($id=NULL) {
-		//return $this->userData->getCreated($id);
+		return $this->userData->getCreated($id);
 	}
 	
 	function post($request_data=NULL) {

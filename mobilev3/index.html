@@ -15,12 +15,12 @@
 				<div class="container">
 					<a class="brand" href="#/"><i class="icon-pushpin"></i> What We Wanna</a>
 					<ul class="nav">
-						<li class="active"><a href="#/">Search</a></li>
+						<li><a href="#/">Search</a></li>
 						<li><a href="#results/">Places</a></li>
 						<li><a href="#user/">User</a></li>
 					</ul>
 					<div class="pull-right">
-							<a href="#signup/" class="btn">Sign-In</a>
+							<a href="#signup/" class="btn btn-success">Sign-In</a>
 					</div>
 				</div>
 			</div>
@@ -65,7 +65,7 @@
 		</script>
 		<script type="text/template" id="search-template">
 		<div class="view">
-			<p><em><%= address %></em> <a class="btn btn-small btn-success" href="#/user">Change Location</a></p>			
+			<p><em><%= address %></em> <a class="btn btn-link" href="#/user">Change Location</a></p>			
 			<hr />
 			<div class="hero-unit">
 				<p>Search for children friendly place's that you and your kids will enjoy.</p>
@@ -127,10 +127,10 @@
 						<form class="form-horizontal" id="signin-form" method="post">
 							<h2>Account Sign-In</h2>
 							<div class="control-group">
-								<input type="email" name="signin-email" id="signin-email" value="" placeholder="Email"  />
+								<input type="email" name="email" id="signin-email" value="" placeholder="Email"  />
 							</div>	
 							<div class="control-group">
-								<input type="password" name="signin-pw" id="signin-pw" value="" placeholder="Password"  />
+								<input type="password" name="password" id="signin-pw" value="" placeholder="Password"  />
 							</div>
 							<div class="control-group">
 								<button type="submit" class="btn btn-success btn-large">Sign In</button>
@@ -144,17 +144,17 @@
 							<h2>Sign-Up</h2>
 							<form class="form-horizontal" id="signup-form" method="post">
 								<div class="control-group">
-									<input type="text" name="signup-name" id="signup-name" value="" placeholder="Name"  />
+									<input type="text" name="name" id="signup-name" value="" placeholder="Name"  />
 								</div>
 								<div class="control-group">
-									<input type="email" name="signup-email" id="signup-email" value="" placeholder="Email"  />
+									<input type="email" name="email" id="signup-email" value="" placeholder="Email"  />
 								</div>	
 								<div class="control-group">
-									<input type="password" name="signup-pw" id="signup-pw" value="" placeholder="Password"  />
+									<input type="password" name="password" id="signup-pw" value="" placeholder="Password"  />
 								</div>
 								<div class="control-group">
 									<label class="checkbox">
-										<input type="checkbox" id="signup-newsletter"> Recieve Newsletter?
+										<input type="checkbox" name="newsletter" id="signup-newsletter"> Recieve Newsletter?
 									</label>
 								</div>
 								<div class="control-group">

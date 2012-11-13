@@ -442,14 +442,15 @@ $( function( $ ) {
 			
 			console.log(signUpData);
 			
-			var loginForm = $.ajax({
+			var signUpForm = $.ajax({
 				type: "POST",
-				url: "/api/index.php/user.json/login",
+				url: "/api/index.php/user.json",
 				dataType: "JSON",
 				data: signUpData
 			});
 				  
-			signForm.done(function(response){
+			signUpForm.done(function(response){
+				console.log(response);
 				app.BrowsingUser.set({loggedIn:true})
 			});
 		},
@@ -467,7 +468,8 @@ $( function( $ ) {
 				data: loginData
 			});
 				  
-			signForm.done(function(response){
+			loginForm.done(function(response){
+				console.log(response);
 				app.BrowsingUser.set({loggedIn:true})
 			});
 		}

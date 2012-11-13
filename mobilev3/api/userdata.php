@@ -79,7 +79,7 @@ class UserData
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
             
-           $queryString = "SELECT id, name, description, address, latitude, longitude, recommeded FROM place LEFT JOIN (user_todo_place) ON user_todo_place.todo_id =notes.id) WHERE user_todo_place.user_id = '{$id}'";
+           $queryString = "SELECT id, name, description, address, latitude, longitude, recommeded FROM place LEFT JOIN user_todo_place ON user_todo_place.todo_id =notes.id WHERE user_todo_place.user_id = '{$id}'";
 	    
             $stmt = $this->db->query($queryString);
             return $this->id2int($stmt->fetchAll());
@@ -98,7 +98,7 @@ class UserData
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
 	    
-	    $queryString = "SELECT id, name, description, address, latitude, longitude, recommeded FROM place LEFT JOIN (user_recommended_place) ON user_recommended_place.recommended_id =notes.id) WHERE user_recommended_place.user_id = '{$id}'";
+	    $queryString = "SELECT id, name, description, address, latitude, longitude, recommeded FROM place LEFT JOIN user_recommended_place ON user_recommended_place.recommended_id =notes.id WHERE user_recommended_place.user_id = '{$id}'";
 	    
             $stmt = $this->db->query($queryString);
             return $this->id2int($stmt->fetchAll());
@@ -117,7 +117,7 @@ class UserData
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
             
-            $queryString = "SELECT id, name, description, address, latitude, longitude, recommeded FROM place LEFT JOIN (user_created_place) ON user_created_place.created_id =notes.id) WHERE user_created_place.user_id = '{$id}'";
+            $queryString = "SELECT id, name, description, address, latitude, longitude, recommeded FROM place LEFT JOIN user_created_place ON user_created_place.created_id =notes.id WHERE user_created_place.user_id = '{$id}'";
 	    
             $stmt = $this->db->query($queryString);
             return $this->id2int($stmt->fetchAll());
