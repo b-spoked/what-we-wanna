@@ -20,7 +20,8 @@
 						<li><a href="#user/">User</a></li>
 					</ul>
 					<div class="pull-right">
-							<a href="#signup/" class="btn btn-success">Sign-In</a>
+							<a href="#signin/" class="btn btn-success">Sign-In</a>
+							<a href="#signup/" class="btn btn-link">Sign-Up</a>
 					</div>
 				</div>
 			</div>
@@ -117,7 +118,7 @@
 		</script>
 		<script type="text/template" id="signup-template">
 		<div class="view">
-			<ul class="nav nav-tabs">
+			<ul class="nav nav-tabs" id="sign-up-in-tabs">
 				<li class="active"><a data-toggle="tab" href="#sign-in-tab">Sign In</a></li>
 				<li><a data-toggle="tab" href="#sign-up-tab">Sign Up</a></li>
 			</ul>	
@@ -130,7 +131,7 @@
 								<input type="email" name="email" id="signin-email" value="" placeholder="Email"  />
 							</div>	
 							<div class="control-group">
-								<input type="password" name="password" id="signin-pw" value="" placeholder="Password"  />
+								<input type="password" name="password" id="signin-pw" placeholder="Password"  />
 							</div>
 							<div class="control-group">
 								<button type="submit" class="btn btn-success btn-large">Sign In</button>
@@ -154,7 +155,7 @@
 								</div>
 								<div class="control-group">
 									<label class="checkbox">
-										<input type="checkbox" name="newsletter" id="signup-newsletter"> Recieve Newsletter?
+										<input type="checkbox" name="newsletter" value="1" id="signup-newsletter"> Recieve Newsletter?
 									</label>
 								</div>
 								<div class="control-group">

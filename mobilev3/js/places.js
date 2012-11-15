@@ -449,9 +449,12 @@ $( function( $ ) {
 				data: signUpData
 			});
 				  
-			signUpForm.done(function(response){
-				console.log(response);
-				app.BrowsingUser.set({loggedIn:true})
+			signUpForm.done(function(userData){
+				if(userData != false){
+					app.BrowsingUser.set({loggedIn:true,sid:userData.id,name:userData.name, email:userData.email});
+					AppRouter.navigate("");
+				}
+				
 			});
 		},
 		signin: function(e){
@@ -468,9 +471,13 @@ $( function( $ ) {
 				data: loginData
 			});
 				  
-			loginForm.done(function(response){
-				console.log(response);
-				app.BrowsingUser.set({loggedIn:true})
+			loginForm.done(function(userData){
+				
+				if(userData != false){
+					app.BrowsingUser.set({loggedIn:true,sid:userData.id,name:userData.name, email:userData.email});
+					AppRouter.navigate("");
+				}
+				
 			});
 		}
 	});
@@ -566,7 +573,8 @@ $( function( $ ) {
 			"user/" : "showUser",
 			"user/:id" : "showUser",
 			"addplace/" : "showAdd",
-			"signup/" : "showSignup"
+			"signup/" : "showSignup",
+			"signin/" : "showSignup"
 		},
 
 		showSearch: function() {
@@ -585,8 +593,6 @@ $( function( $ ) {
 			}else{
 				RegionManager.show(new app.UserView({model:app.BrowsingUser}));
 			}
-			
-			
 		},
 		showAdd: function( ) {
 			RegionManager.show(new app.AddPlaceView());

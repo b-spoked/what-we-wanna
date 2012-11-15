@@ -26,7 +26,7 @@ class UserData
     {
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
-            $sql = 'SELECT name,email FROM user WHERE id = ' . mysql_escape_string(
+            $sql = 'SELECT id, name, email FROM user WHERE id = ' . mysql_escape_string(
             $id);
             return $this->id2int($this->db->query($sql)
                 ->fetch());
@@ -62,8 +62,8 @@ class UserData
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
             
-            $stmt = $this->db->query("SELECT id FROM user WHERE email = '{$email}' AND password='SHA1({$pw})'");
-            return $this->id2int($this->db->query($stmt)->fetch());
+	    $queryString = "SELECT id, name, email FROM user WHERE email = '{$email}' AND password = SHA1('$pw')";
+            return $this->id2int($this->db->query($queryString)->fetch());
             
         } catch (PDOException $e) {
             if (! $installTableOnFailure && $e->getCode() == '42S02') {
@@ -81,8 +81,7 @@ class UserData
             
            $queryString = "SELECT id, name, description, address, latitude, longitude, recommeded FROM place LEFT JOIN user_todo_place ON user_todo_place.todo_id =notes.id WHERE user_todo_place.user_id = '{$id}'";
 	    
-            $stmt = $this->db->query($queryString);
-            return $this->id2int($stmt->fetchAll());
+            return $this->id2int($this->db->query($queryString)->fetchAll());
             
         } catch (PDOException $e) {
             if (! $installTableOnFailure && $e->getCode() == '42S02') {
@@ -100,8 +99,7 @@ class UserData
 	    
 	    $queryString = "SELECT id, name, description, address, latitude, longitude, recommeded FROM place LEFT JOIN user_recommended_place ON user_recommended_place.recommended_id =notes.id WHERE user_recommended_place.user_id = '{$id}'";
 	    
-            $stmt = $this->db->query($queryString);
-            return $this->id2int($stmt->fetchAll());
+            return $this->id2int($this->db->query($queryString)->fetchAll());
             
         } catch (PDOException $e) {
             if (! $installTableOnFailure && $e->getCode() == '42S02') {
@@ -118,9 +116,7 @@ class UserData
         try {
             
             $queryString = "SELECT id, name, description, address, latitude, longitude, recommeded FROM place LEFT JOIN user_created_place ON user_created_place.created_id =notes.id WHERE user_created_place.user_id = '{$id}'";
-	    
-            $stmt = $this->db->query($queryString);
-            return $this->id2int($stmt->fetchAll());
+	    return $this->id2int($this->db->query($queryString)->fetchAll());
             
         } catch (PDOException $e) {
             if (! $installTableOnFailure && $e->getCode() == '42S02') {
@@ -140,8 +136,10 @@ class UserData
         $newsletter= mysql_escape_string($rec['newsletter']);
 	
         $sql = "INSERT INTO user (name,email,newsletter,password,updated_at) VALUES ('$name', '$email',' $newsletter', SHA1('$password'),NOW())";  
-        if (! $this->db->query($sql))
+    
+	if (! $this->db->query($sql)){
             return FALSE;
+	}
         return $this->get($this->db->lastInsertId());
     }
     
@@ -153,7 +151,9 @@ class UserData
         $newsletter= mysql_escape_string($rec['newsletter']);
 	
         $sql = "UPDATE user SET name = '$name', email ='$email', newsletter ='$newsletter',password = SHA1('$password'), updated_at=NOW() WHERE id = $id";
-        if (! $this->db->query($sql))
+        
+	
+	if (! $this->db->query($sql))
             return FALSE;
         return $this->get($id);
     }
@@ -186,8 +186,8 @@ class UserData
             id INT AUTO_INCREMENT PRIMARY KEY ,
             name TEXT NOT NULL ,
             email TEXT NOT NULL,
-	    newsletter Boolean,
-	    password VARCHAR(40),
+	    newsletter BOOL NOT NULL,
+	    password VARCHAR(40) NOT NULL,
             updated_at DATETIME
         );");
 	
