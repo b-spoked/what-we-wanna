@@ -99,7 +99,7 @@ $( function( $ ) {
 			created: []
 		},
 		
-		url: '/api/index.php/user.json/',
+		urlRoot: '/api/index.php/user.json',
 		
 		initialize: function() {
 			
@@ -107,19 +107,19 @@ $( function( $ ) {
 			
 			this.todos = new RelatedPlaceList(this.get('todos'));
 			this.todos.url = function () {
-				return self.url + 'todos/'+self.get('sid');
+				return self.urlRoot + 'todos/'+self.get('id');
 			};
 			//this.todos.on("add", this.syncTodos);
 			
 			this.recommended = new RelatedPlaceList(this.get('recommended'));
 			this.recommended.url = function () {
-				return self.url + 'recommended/'+self.get('sid');
+				return self.urlRoot + 'recommended/'+self.get('id');
 			};
 			//this.recommended.on("add", this.syncRecommended);
 			
 			this.created = new RelatedPlaceList(this.get('created'));
 			this.created.url = function () {
-				return self.url + 'created/'+self.get('sid');
+				return self.urlRoot + 'created/'+self.get('id');
 			};
 			//this.created.on("add", this.syncCreated);
 			
@@ -451,8 +451,9 @@ $( function( $ ) {
 				  
 			signUpForm.done(function(userData){
 				if(userData != false){
-					app.BrowsingUser.set({loggedIn:true,sid:userData.id,name:userData.name, email:userData.email});
-					AppRouter.navigate("");
+					app.BrowsingUser.set({loggedIn:true,id:userData.id,name:userData.name, email:userData.email});
+					app.BrowsingUser.fetch();
+					window.location.replace('#');
 				}
 				
 			});
@@ -474,8 +475,9 @@ $( function( $ ) {
 			loginForm.done(function(userData){
 				
 				if(userData != false){
-					app.BrowsingUser.set({loggedIn:true,sid:userData.id,name:userData.name, email:userData.email});
-					AppRouter.navigate("");
+					app.BrowsingUser.set({loggedIn:true,id:userData.id,name:userData.name, email:userData.email});
+					app.BrowsingUser.fetch();
+					window.location.replace('#');
 				}
 				
 			});
