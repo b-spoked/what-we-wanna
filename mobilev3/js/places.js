@@ -88,12 +88,7 @@ $( function( $ ) {
 		defaults: {
 			id:0,
 			name: '',
-			loggedIn:false,
-			browsing:false,
 			updated_at : '',
-			latitude: 0,
-			longitude: 0,
-			address : '',
 			todos: [],
 			recommended: [],
 			created: []
@@ -123,13 +118,7 @@ $( function( $ ) {
 			};
 			//this.created.on("add", this.syncCreated);
 			
-			if(this.get('loggedIn')||this.get('browsing')){
-				_.bindAll(this);
-				if (navigator.geolocation) {
-					navigator.geolocation.getCurrentPosition(this.onSuccessUpdatePos,
-					this.onFailUpdatePos);
-				}
-			}
+			
 		},
 		
 		
@@ -149,18 +138,40 @@ $( function( $ ) {
 			if(this.get('loggedIn')){
 				this.created.storage.sync.push();
 			}
-		},
-		
+		}
+	});
+	var UserSession = Backbone.Model.extend({
+        defaults: {
+            loggedIn: false,
+            userId: null,
+			name:null,
+			latitude: 0,
+			longitude: 0,
+			address : null
+        },
+        initialize: function(){
+			
+			this.loadFromCookies();
+			
+			if(!this.get('address')){
+				_.bindAll(this);
+				if (navigator.geolocation) {
+					navigator.geolocation.getCurrentPosition(this.onSuccessUpdatePos,
+					this.onFailUpdatePos);
+				}
+			}
+            
+        },
 		onSuccessUpdatePos: function(position) {
 
 			this.set({
 				latitude: position.coords.latitude
 			});
-			console.log("lat: "+this.get("latitude"));
+			//console.log("lat: "+this.get("latitude"));
 			this.set({
 				longitude: position.coords.longitude
 			});
-			console.log("lng: "+this.get("longitude"));
+			//console.log("lng: "+this.get("longitude"));
 
 			var geocoder = new google.maps.Geocoder();
 			var latlng = new google.maps.LatLng(this.get("latitude"), this.get("longitude"));
@@ -172,7 +183,7 @@ $( function( $ ) {
 		onSuccessUpdateAddress : function(results, status) {
 			if (status == google.maps.GeocoderStatus.OK) {
 				if (results[1]) {
-					console.log(results[1].formatted_address);
+					//console.log(results[1].formatted_address);
 					this.set({
 						address: results[1].formatted_address
 					});
@@ -181,10 +192,21 @@ $( function( $ ) {
 		},
 		onFailUpdatePos : function(error) {
 			console.log(error);
-		}
-	});
+		},
+        saveToCookies: function(id,isAuthenticated){
+            $.cookie('userId', this.get('userId'));
+            $.cookie('loggedIn', this.get('loggedIn'));
+            $.cookie('loggedIn', this.get('address'));
+        },
+        loadFromCookies: function(){
+            this.set({userId :$.cookie('userId')});
+            this.set({loggedIn :$.cookie('loggedIn')});
+            this.set({address : $.cookie('address')});
+        }
+    })
 	app.Places = new PlaceList();
-	app.BrowsingUser = new User({browsing:true});
+	app.UserDetails = new User();
+	app.BrowsingUserSession = new UserSession();
 	app.PlaceView = Backbone.View.extend({
 
 		//... is a list tag.
@@ -274,10 +296,10 @@ $( function( $ ) {
 			alert('show comments');
 		},
 		addBookmark : function() {
-			app.BrowsingUser.todos.add(new Place({sid: this.model.get('sid')}));
+			app.UserDetails.todos.add(new Place({sid: this.model.get('sid')}));
 		},
 		addRecommendation : function() {
-			app.BrowsingUser.recommended.add(new Place({sid: this.model.get('sid')}));
+			app.UserDetails.recommended.add(new Place({sid: this.model.get('sid')}));
 		}
 	});
 
@@ -292,10 +314,10 @@ $( function( $ ) {
 
 		initialize: function() {
 			_.bindAll(this, "render");
-			app.BrowsingUser.bind('change:address', this.render);
+			app.BrowsingUserSession.bind('change:address', this.render);
 		},
 		render: function() {
-			$(this.el).html(this.searchTemplate(app.BrowsingUser.toJSON()));
+			$(this.el).html(this.searchTemplate(app.BrowsingUserSession.toJSON()));
 		},
 		close: function() {
 			this.remove();
@@ -416,6 +438,22 @@ $( function( $ ) {
 		}
 	});
 	
+	app.NavigationaView = Backbone.View.extend({
+
+		el:'',
+		
+		navTemplate: _.template( $('#navigation-template').html()),
+		
+		initialize: function() {
+			_.bindAll(this, "render");
+			app.BrowsingUserSession.bind('change:loggedIn', this.render);
+		},
+		render: function() {
+			$(this.el).html(this.navTemplate(app.BrowsingUserSession.toJSON()));
+		}
+		
+	});
+	
 	app.SignupView = Backbone.View.extend({
 
 		signUpTemplate: _.template( $('#signup-template').html()),
@@ -451,8 +489,8 @@ $( function( $ ) {
 				  
 			signUpForm.done(function(userData){
 				if(userData != false){
-					app.BrowsingUser.set({loggedIn:true,id:userData.id,name:userData.name, email:userData.email});
-					app.BrowsingUser.fetch();
+					app.UserDetails.set({id:userData.id,name:userData.name, email:userData.email});
+					app.BrowsingUserSession.set({loggedIn:true,id:userData.id});
 					window.location.replace('#');
 				}
 				
@@ -475,8 +513,8 @@ $( function( $ ) {
 			loginForm.done(function(userData){
 				
 				if(userData != false){
-					app.BrowsingUser.set({loggedIn:true,id:userData.id,name:userData.name, email:userData.email});
-					app.BrowsingUser.fetch();
+					app.UserDetails.set({id:userData.id,name:userData.name, email:userData.email});
+					app.BrowsingUserSession.set({loggedIn:true,id:userData.id});
 					window.location.replace('#');
 				}
 				
@@ -593,7 +631,7 @@ $( function( $ ) {
 				var UserToView = new User({sid:id});
 				RegionManager.show(new app.UserView({model:UserToView}));
 			}else{
-				RegionManager.show(new app.UserView({model:app.BrowsingUser}));
+				RegionManager.show(new app.UserView({model:app.UserDetails}));
 			}
 		},
 		showAdd: function( ) {
