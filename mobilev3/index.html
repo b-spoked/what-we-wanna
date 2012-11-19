@@ -10,52 +10,40 @@
 		<link rel="stylesheet" href="stylesheets/bootstrap.min.css" />
 	</head>
 	<body>
-		<div class="navbar navbar-inverse">
-			<div class="navbar-inner">
-				<div class="container">
-					<a class="brand" href="#/"><i class="icon-pushpin"></i> What We Wanna</a>
-					<ul class="nav">
-						<li><a href="#/">Search</a></li>
-						<li><a href="#results/">Places</a></li>
-						<li><a href="#user/">User</a></li>
-					</ul>
-					<div class="pull-right">
-						
-							<a href="#signin/" class="btn btn-success">Sign-In</a>
-							<a href="#signup/" class="btn btn-link">Sign-Up</a>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div class="container">
-			<div class="sixteen columns">	
+		<section id="wanna-app">
+			<section id="app-nav">
+				
+			</section>
+			<div class="container">
+				<div class="sixteen columns">	
 					<section id="main">			  
 					</section>
+				</div>
 			</div>
-		</div>
+		</section>
 		<!-- Templates -->
-		<script type="text/template" id="navigation-template">
-		<div class="navbar navbar-inverse">
-			<div class="navbar-inner">
-				<div class="container">
-					<a class="brand" href="#/"><i class="icon-pushpin"></i> What We Wanna</a>
-					<ul class="nav">
-						<li><a href="#/">Search</a></li>
-						<li><a href="#results/">Places</a></li>
-						<li><a href="#user/">User</a></li>
-					</ul>
-					<div class="pull-right">
-							<% if(loggedIn) { %>
-								<a href="#user/" class="btn btn-success">Hi <%= name%></a>
-								<button id="signout" class="btn btn-link">Sign-Out</button>
-							<% } else { %>
-								<a href="#signin/" class="btn btn-success">Sign-In</a>
-								<a href="#signup/" class="btn btn-link">Sign-Up</a>
-							<% } %>
+		<script type="text/template" id="nav-template">
+			<div class="navbar navbar-inverse">
+				<div class="navbar-inner">
+					<div class="container">
+						<a class="brand" href="#/"><i class="icon-pushpin"></i> What We Wanna</a>
+						<ul class="nav">
+							<li><a href="#/">Search</a></li>
+							<li><a href="#results/">Places</a></li>
+							<li><a href="#user/">User</a></li>
+						</ul>
+						<div class="pull-right">
+								<% if(loggedIn) { %>
+									<a href="#user/" class="btn btn-success">Hi <%= name%></a>
+									<button id="signout" class="btn btn-link">Sign-Out</button>
+								<% } else { %>
+									<a href="#signin/" class="btn btn-success">Sign-In</a>
+									<a href="#signup/" class="btn btn-link">Sign-Up</a>
+								<% } %>
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
 		</script>
 		<script type="text/template" id="place-template">
 			<div class="view">

@@ -437,21 +437,20 @@ $( function( $ ) {
 			$(this.el).show(500);
 		}
 	});
-	
-	app.NavigationaView = Backbone.View.extend({
+	app.NavView = Backbone.View.extend({
 
-		el:'',
+		el: "#app-nav",
 		
-		navTemplate: _.template( $('#navigation-template').html()),
+		appTemplate: _.template( $('#nav-template').html()),
 		
 		initialize: function() {
-			_.bindAll(this, "render");
-			app.BrowsingUserSession.bind('change:loggedIn', this.render);
+			this.model.bind('change:loggedIn', this.render);
+			this.render();
+			
 		},
 		render: function() {
-			$(this.el).html(this.navTemplate(app.BrowsingUserSession.toJSON()));
+			this.$el.html(this.appTemplate(this.model.toJSON()));
 		}
-		
 	});
 	
 	app.SignupView = Backbone.View.extend({
@@ -605,6 +604,8 @@ $( function( $ ) {
 
 	var ApplicationRouter = Backbone.Router.extend({
 
+		navigationView : null,
+
 		routes: {
 			"":"showSearch",
 			"results/": "showResults",
@@ -615,6 +616,11 @@ $( function( $ ) {
 			"addplace/" : "showAdd",
 			"signup/" : "showSignup",
 			"signin/" : "showSignup"
+		},
+		
+		
+		initialize: function() {
+			this.navigationView = new app.NavView({model: app.BrowsingUserSession});
 		},
 
 		showSearch: function() {
