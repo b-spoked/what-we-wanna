@@ -149,6 +149,7 @@ $( function( $ ) {
 			longitude: 0,
 			address : null
         },
+		urlRoot: '/api/index.php/user.json',
         initialize: function(){
 			
 			this.loadFromCookies();
@@ -444,12 +445,12 @@ $( function( $ ) {
 		appTemplate: _.template( $('#nav-template').html()),
 		
 		initialize: function() {
-			this.model.bind('change:loggedIn', this.render);
+			_.bindAll(this, "render");
+			app.BrowsingUserSession.bind('change:loggedIn',this.render);
 			this.render();
-			
 		},
 		render: function() {
-			this.$el.html(this.appTemplate(this.model.toJSON()));
+			$(this.el).html(this.appTemplate(app.BrowsingUserSession.toJSON()));
 		}
 	});
 	
@@ -620,7 +621,7 @@ $( function( $ ) {
 		
 		
 		initialize: function() {
-			this.navigationView = new app.NavView({model: app.BrowsingUserSession});
+			this.navigationView = new app.NavView();
 		},
 
 		showSearch: function() {
