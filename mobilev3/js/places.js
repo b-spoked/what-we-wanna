@@ -154,6 +154,9 @@ $( function( $ ) {
 			
 			this.loadFromCookies();
 			
+			this.bind('change', this.saveToCookies);
+			
+			
 			if(!this.get('address')){
 				_.bindAll(this);
 				if (navigator.geolocation) {
@@ -194,13 +197,15 @@ $( function( $ ) {
 		onFailUpdatePos : function(error) {
 			console.log(error);
 		},
-        saveToCookies: function(id,isAuthenticated){
-            $.cookie('userId', this.get('userId'));
+        saveToCookies: function(){
+            $.cookie('id', this.get('id'));
+			$.cookie('name', this.get('name'));
             $.cookie('loggedIn', this.get('loggedIn'));
-            $.cookie('loggedIn', this.get('address'));
+            $.cookie('address', this.get('address'));
         },
         loadFromCookies: function(){
-            this.set({userId :$.cookie('userId')});
+            this.set({id :$.cookie('id')});
+            this.set({name :$.cookie('name')});
             this.set({loggedIn :$.cookie('loggedIn')});
             this.set({address : $.cookie('address')});
         }
@@ -490,7 +495,7 @@ $( function( $ ) {
 			signUpForm.done(function(userData){
 				if(userData != false){
 					app.UserDetails.set({id:userData.id,name:userData.name, email:userData.email});
-					app.BrowsingUserSession.set({loggedIn:true,id:userData.id});
+					app.BrowsingUserSession.set({loggedIn:true,id:userData.id,name:userData.name});
 					window.location.replace('#');
 				}
 				
@@ -514,7 +519,7 @@ $( function( $ ) {
 				
 				if(userData != false){
 					app.UserDetails.set({id:userData.id,name:userData.name, email:userData.email});
-					app.BrowsingUserSession.set({loggedIn:true,id:userData.id});
+					app.BrowsingUserSession.set({loggedIn:true,id:userData.id,name:userData.name});
 					window.location.replace('#');
 				}
 				
