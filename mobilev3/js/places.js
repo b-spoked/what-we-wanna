@@ -102,23 +102,21 @@ $( function( $ ) {
 			
 			this.todos = new RelatedPlaceList(this.get('todos'));
 			this.todos.url = function () {
-				return self.urlRoot + 'todos/'+self.get('id');
+				return self.urlRoot + '/todos/'+self.get('id');
 			};
 			//this.todos.on("add", this.syncTodos);
 			
 			this.recommended = new RelatedPlaceList(this.get('recommended'));
 			this.recommended.url = function () {
-				return self.urlRoot + 'recommended/'+self.get('id');
+				return self.urlRoot + '/recommended/'+self.get('id');
 			};
 			//this.recommended.on("add", this.syncRecommended);
 			
 			this.created = new RelatedPlaceList(this.get('created'));
 			this.created.url = function () {
-				return self.urlRoot + 'created/'+self.get('id');
+				return self.urlRoot + '/created/'+self.get('id');
 			};
 			//this.created.on("add", this.syncCreated);
-			
-			
 		},
 		
 		
@@ -143,7 +141,6 @@ $( function( $ ) {
 	var UserSession = Backbone.Model.extend({
         defaults: {
             loggedIn: false,
-            userId: null,
 			name:null,
 			latitude: 0,
 			longitude: 0,
@@ -155,7 +152,6 @@ $( function( $ ) {
 			this.loadFromCookies();
 			
 			this.bind('change', this.saveToCookies);
-			
 			
 			if(!this.get('address')){
 				_.bindAll(this);
@@ -197,17 +193,32 @@ $( function( $ ) {
 		onFailUpdatePos : function(error) {
 			console.log(error);
 		},
+		isLoggedIn:function(userId){
+			return (userId==this.get('id') && this.get('loggedIn'));
+		},
         saveToCookies: function(){
             $.cookie('id', this.get('id'));
 			$.cookie('name', this.get('name'));
             $.cookie('loggedIn', this.get('loggedIn'));
             $.cookie('address', this.get('address'));
+            $.cookie('latitude', this.get('latitude'));
+            $.cookie('longitude', this.get('longitude'));
+        },
+		clearCookies: function(){
+            $.removeCookie('id');
+			$.removeCookie('name');
+            $.removeCookie('loggedIn');
+            $.removeCookie('address');
+            $.removeCookie('latitude');
+            $.removeCookie('longitude');
         },
         loadFromCookies: function(){
             this.set({id :$.cookie('id')});
             this.set({name :$.cookie('name')});
             this.set({loggedIn :$.cookie('loggedIn')});
             this.set({address : $.cookie('address')});
+            this.set({latitude : $.cookie('latitude')});
+            this.set({longitude : $.cookie('longitude')});
         }
     })
 	app.Places = new PlaceList();
@@ -355,7 +366,7 @@ $( function( $ ) {
 		},
 
 		initialize: function() {
-			$(this.el).html(this.userTemplate());
+			
 			this.model.todos.on( 'add', this.addToDo, this );
 			this.model.todos.on( 'reset', this.addAllToDos, this );
 			
@@ -363,6 +374,7 @@ $( function( $ ) {
 			this.model.recommended.on( 'reset', this.addAllRecommended, this );
 		},
 		render: function() {
+			$(this.el).html(this.userTemplate(this.model.toJSON()));
 			$(this.el).hide();
 		},
 		close: function() {
@@ -447,6 +459,10 @@ $( function( $ ) {
 
 		el: "#app-nav",
 		
+		events: {
+			"click .signout" : "signOut"
+		},
+		
 		appTemplate: _.template( $('#nav-template').html()),
 		
 		initialize: function() {
@@ -456,6 +472,10 @@ $( function( $ ) {
 		},
 		render: function() {
 			$(this.el).html(this.appTemplate(app.BrowsingUserSession.toJSON()));
+		},
+		signOut:function(){
+			app.BrowsingUserSession.clearCookies();
+			this.render();
 		}
 	});
 	
@@ -557,7 +577,7 @@ $( function( $ ) {
 		addOne: function( place ) {
 
 			place.set({
-				distance: this.distanceFromUser(place,app.BrowsingUser.get("latitude"),app.BrowsingUser.get("longitude"))
+				distance: this.distanceFromUser(place,app.BrowsingUserSession.get("latitude"),app.BrowsingUserSession.get("longitude"))
 			});
 			var view = new app.PlaceView({
 				model: place

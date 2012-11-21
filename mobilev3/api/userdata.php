@@ -93,7 +93,7 @@ class UserData
         }
     }
     
-    function getRecomended($id, $installTableOnFailure = FALSE){
+    function getRecommended($id, $installTableOnFailure = FALSE){
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
 	    

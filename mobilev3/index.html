@@ -34,8 +34,8 @@
 						</ul>
 						<div class="pull-right">
 								<% if(loggedIn) { %>
-									<a href="#user/" class="btn btn-link">Hi <%= name%></a>
-									<button id="signout" class="btn btn-link">Sign-Out</button>
+									<a href="#user/" class="btn">Hi <%= name%></a>
+									<button class="signout btn">Sign-Out</button>
 								<% } else { %>
 									<a href="#signin/" class="btn btn-success">Sign-In</a>
 									<a href="#signup/" class="btn btn-link">Sign-Up</a>
@@ -103,12 +103,13 @@
 				<div class="tab-content">
 					<div class="tab-pane active" id="user-details">
 						<blockquote><i class="icon-cogs"></i> User Details</blockquote>
-						<div class="one-third column alpha">
-							<h4>Account Settings</h4>
-						</div>
-						<div class="two-third column omega">
-							<h4>Location Settings</h4>
-						</div>
+						
+							<% if(app.BrowsingUserSession.isLoggedIn(id)) { %>
+									n: <%= name%>
+									a: <input type="text" name="user-address" value="<%= app.BrowsingUserSession.address%>">
+							<% } else { %>
+									n: <%= name%>
+							<% } %>
 					</div>
 					<div class="tab-pane" id="user-todos">
 						<blockquote><i class="icon-star"></i> Places on the todo list</blockquote>
