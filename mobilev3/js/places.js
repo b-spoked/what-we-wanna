@@ -374,7 +374,7 @@ $( function( $ ) {
 			this.model.recommended.on( 'reset', this.addAllRecommended, this );
 		},
 		render: function() {
-			$(this.el).html(this.userTemplate(this.model.toJSON()));
+			$(this.el).html(this.userTemplate(this.model.toJSON(), app.BrowsingUserSession.toJSON()));
 			$(this.el).hide();
 		},
 		close: function() {

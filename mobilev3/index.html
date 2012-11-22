@@ -94,23 +94,21 @@
 		</script>
 		<script type="text/template" id="user-template">
 		<div class="view">
+				<div >
+					<img class="pull-left img-polaroid" src="http://placehold.it/64x64">
+					
+						<h3><%= name%></h3>
+						<% if(app.BrowsingUserSession.isLoggedIn(id)) { %>
+							<p><em><%= app.BrowsingUserSession.get("address") %></em> <button id="location" class="btn btn-link">Change Location</button></p>
+						<% } %>
+				</div>
+				<div class="clear"></div>
 				<ul class="nav nav-tabs">
-					<li class="active"><a data-toggle="tab" href="#user-details">Details</a></li>
-					<li><a data-toggle="tab" href="#user-todos">To Do List</a></li>
+					<li class="active"><a data-toggle="tab" href="#user-todos">To Do List</a></li>
 					<li><a data-toggle="tab" href="#user-recommended">Recommended</a></li>
 					<li><a data-toggle="tab" href="#user-owned">Added</a></li>
 				</ul>	
 				<div class="tab-content">
-					<div class="tab-pane active" id="user-details">
-						<blockquote><i class="icon-cogs"></i> User Details</blockquote>
-						
-							<% if(app.BrowsingUserSession.isLoggedIn(id)) { %>
-									n: <%= name%>
-									a: <input type="text" name="user-address" value="<%= app.BrowsingUserSession.address%>">
-							<% } else { %>
-									n: <%= name%>
-							<% } %>
-					</div>
 					<div class="tab-pane" id="user-todos">
 						<blockquote><i class="icon-star"></i> Places on the todo list</blockquote>
 						<input type="text" id="filter-todos" placeholder="filter to do's...">
