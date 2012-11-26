@@ -112,8 +112,6 @@ $( function( $ ) {
 				return self.urlRoot + '/created/'+self.get('id');
 			};
 			
-			this.recommended.on("change", this.saveRelatedModels);
-			this.todos.on("change", this.saveRelatedModels);
 		},
 		saveRelatedModels : function(){
 			
@@ -316,9 +314,7 @@ $( function( $ ) {
 			var userId = app.BrowsingUserSession.get('id');
 			if(app.Users.get(userId)){
 				app.Users.get(userId).todos.push(this.model);
-				var related_todos = app.Users.get(userId).todos.pluck('sid');
-				var related_recommended = app.Users.get(userId).recommended.pluck('sid');
-				app.Users.get(userId).save({todos:related_todos,recommended:related_recommended});
+				app.Users.get(userId).saveRelatedModels();
 			}
 		},
 		addRecommendation : function() {
@@ -326,9 +322,7 @@ $( function( $ ) {
 			var userId = app.BrowsingUserSession.get('id');
 			if(app.Users.get(userId)){
 				app.Users.get(userId).recommended.push(this.model);
-				var related_todos = app.Users.get(userId).todos.pluck('sid');
-				var related_recommended = app.Users.get(userId).recommended.pluck('sid');
-				app.Users.get(userId).save({todos:related_todos,recommended:related_recommended});
+				app.Users.get(userId).saveRelatedModels();
 			}
 		}
 	});
