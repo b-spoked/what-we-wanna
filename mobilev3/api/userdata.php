@@ -132,30 +132,62 @@ class UserData
     {
         $name = mysql_escape_string($rec['name']);
         $email = mysql_escape_string($rec['email']);
-        $password= mysql_escape_string($rec['password']);
+        //$password= mysql_escape_string($rec['password']);
         $newsletter= mysql_escape_string($rec['newsletter']);
+        $todos = mysql_escape_string($rec['todos']);
+        $recommended = mysql_escape_string($rec['recommended']);
 	
-        $sql = "INSERT INTO user (name,email,newsletter,password,updated_at) VALUES ('$name', '$email',' $newsletter', SHA1('$password'),NOW())";  
+        $sql = "INSERT INTO user (name,email,newsletter,updated_at) VALUES ('$name', '$email',' $newsletter', NOW())";  
     
-	if (! $this->db->query($sql)){
+	if (!$this->db->query($sql)){
             return FALSE;
 	}
-        return $this->get($this->db->lastInsertId());
+	
+	$id = $this->get($this->db->lastInsertId());
+	
+	$this->insertTodos($id,$todos);
+	$this->insertRecommended($id,$recommended);
+	
+	return $id;
+        
     }
     
     function update ($id, $rec)
     {
 	$name = mysql_escape_string($rec['name']);
         $email = mysql_escape_string($rec['email']);
-        $password= mysql_escape_string($rec['password']);
+        //$password= mysql_escape_string($rec['password']);
         $newsletter= mysql_escape_string($rec['newsletter']);
+        $todos = mysql_escape_string($rec['todos']);
+        $recommended = mysql_escape_string($rec['recommended']);
 	
-        $sql = "UPDATE user SET name = '$name', email ='$email', newsletter ='$newsletter',password = SHA1('$password'), updated_at=NOW() WHERE id = $id";
+        $sql = "UPDATE user SET name = '$name', email ='$email', newsletter ='$newsletter', updated_at=NOW() WHERE id = $id";
         
-	
-	if (! $this->db->query($sql))
+	if (! $this->db->query($sql)){
             return FALSE;
+	}
+	$this->insertTodos($id,$todos);
+	$this->insertRecommended($id,$recommended);
+	
         return $this->get($id);
+    }
+    
+    function insertRecommended($id,$recommended){
+	
+	foreach ($recommended as $recommended_id)
+	{
+	   $sql = " INSERT IGNORE INTO user_recommended_place (user_id,recommended_id) VALUES ('$id','$recommended_id')";
+	   $this->db->query($sql);
+	}
+    }
+    
+    function insertTodos($id,$todos){
+	
+	foreach ($todos as $todo_id)
+	{
+	   $sql = " INSERT IGNORE INTO user_todo_place (user_id,todo_id) VALUES ('$id','$todo_id')";
+	   $this->db->query($sql);
+	}
     }
     
     function delete ($id)

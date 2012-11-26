@@ -58,17 +58,14 @@ $( function( $ ) {
 			}));
 		}
 	});
-	var RelatedPlaceList =  Backbone.Collection.extend({
-		model : Place,
-		search : function(letters) {
-			if(letters == "")
-				return this;
-
-			var pattern = new RegExp(letters,"gi");
-			return _(this.filter( function(data) {
-				return pattern.test(data.get("name")) ||pattern.test(data.get("description"));
-			}));
-		}
+	var UserList =  Backbone.Collection.extend({
+		model : User,
+		initialize : function() {
+			this.storage = new Offline.Storage('users', this, {
+				autoPush:true
+			} );
+		},
+		url: '/api/index.php/user.json'
 	});
 	var Comment = Backbone.Model.extend({
 	});
@@ -94,7 +91,7 @@ $( function( $ ) {
 			created: []
 		},
 		
-		urlRoot: '/api/index.php/user.json',
+		urlRoot: "/api/index.php/user.json",
 		
 		initialize: function() {
 			
@@ -104,38 +101,38 @@ $( function( $ ) {
 			this.todos.url = function () {
 				return self.urlRoot + '/todos/'+self.get('id');
 			};
-			//this.todos.on("add", this.syncTodos);
 			
 			this.recommended = new RelatedPlaceList(this.get('recommended'));
 			this.recommended.url = function () {
 				return self.urlRoot + '/recommended/'+self.get('id');
 			};
-			//this.recommended.on("add", this.syncRecommended);
 			
 			this.created = new RelatedPlaceList(this.get('created'));
 			this.created.url = function () {
 				return self.urlRoot + '/created/'+self.get('id');
 			};
-			//this.created.on("add", this.syncCreated);
+			
+			this.recommended.on("change", this.saveRelatedModels);
+			this.todos.on("change", this.saveRelatedModels);
 		},
+		saveRelatedModels : function(){
+			
+			var related_todos = this.todos.pluck('sid');
+			var related_recommended = this.recommended.pluck('sid');	
+			this.save({ todos: related_todos, recommended:related_recommended});
+		}
 		
-		
-		syncTodos:function(){
-			if(this.get('loggedIn')){
-				this.todos.storage.sync.push();
-			}
-		},
-		
-		syncRecommended:function(){
-			if(this.get('loggedIn')){
-				this.recommended.storage.sync.push();
-			}
-		},
-		
-		syncCreated:function(){
-			if(this.get('loggedIn')){
-				this.created.storage.sync.push();
-			}
+	});
+	var RelatedPlaceList =  Backbone.Collection.extend({
+		model : Place,
+		search : function(letters) {
+			if(letters == "")
+				return this;
+
+			var pattern = new RegExp(letters,"gi");
+			return _(this.filter( function(data) {
+				return pattern.test(data.get("name")) ||pattern.test(data.get("description"));
+			}));
 		}
 	});
 	var UserSession = Backbone.Model.extend({
@@ -222,7 +219,9 @@ $( function( $ ) {
         }
     })
 	app.Places = new PlaceList();
-	app.UserDetails = new User();
+	app.Users = new UserList();
+	app.LoggedInUser = new User();
+	
 	app.BrowsingUserSession = new UserSession();
 	app.PlaceView = Backbone.View.extend({
 
@@ -245,6 +244,7 @@ $( function( $ ) {
 
 		initialize: function() {
 			this.model.on( 'change', this.render, this );
+			
 		},
 		// Re-render the titles of the todo item.
 		render: function() {
@@ -313,10 +313,23 @@ $( function( $ ) {
 			alert('show comments');
 		},
 		addBookmark : function() {
-			app.UserDetails.todos.add(new Place({sid: this.model.get('sid')}));
+			var userId = app.BrowsingUserSession.get('id');
+			if(app.Users.get(userId)){
+				app.Users.get(userId).todos.push(this.model);
+				var related_todos = app.Users.get(userId).todos.pluck('sid');
+				var related_recommended = app.Users.get(userId).recommended.pluck('sid');
+				app.Users.get(userId).save({todos:related_todos,recommended:related_recommended});
+			}
 		},
 		addRecommendation : function() {
-			app.UserDetails.recommended.add(new Place({sid: this.model.get('sid')}));
+			
+			var userId = app.BrowsingUserSession.get('id');
+			if(app.Users.get(userId)){
+				app.Users.get(userId).recommended.push(this.model);
+				var related_todos = app.Users.get(userId).todos.pluck('sid');
+				var related_recommended = app.Users.get(userId).recommended.pluck('sid');
+				app.Users.get(userId).save({todos:related_todos,recommended:related_recommended});
+			}
 		}
 	});
 
@@ -514,7 +527,8 @@ $( function( $ ) {
 				  
 			signUpForm.done(function(userData){
 				if(userData != false){
-					app.UserDetails.set({id:userData.id,name:userData.name, email:userData.email});
+					
+					app.Users.add(new User({id:userData.id,name:userData.name, email:userData.email}));
 					app.BrowsingUserSession.set({loggedIn:true,id:userData.id,name:userData.name});
 					window.location.replace('#');
 				}
@@ -538,7 +552,7 @@ $( function( $ ) {
 			loginForm.done(function(userData){
 				
 				if(userData != false){
-					app.UserDetails.set({id:userData.id,name:userData.name, email:userData.email});
+					app.Users.add(new User({id:userData.id,name:userData.name, email:userData.email}));
 					app.BrowsingUserSession.set({loggedIn:true,id:userData.id,name:userData.name});
 					window.location.replace('#');
 				}
@@ -647,6 +661,17 @@ $( function( $ ) {
 		
 		initialize: function() {
 			this.navigationView = new app.NavView();
+			if(app.BrowsingUserSession.get('loggedIn')){
+				
+				if(!app.Users.get(app.BrowsingUserSession.get('id'))){
+					
+					var loggedIn = new User({id: app.BrowsingUserSession.get('id')});
+					loggedIn.fetch();
+					
+					app.Users.add(loggedIn);
+				}
+			
+			}
 		},
 
 		showSearch: function() {
@@ -658,12 +683,17 @@ $( function( $ ) {
 			RegionManager.show(new app.FoundPlacesView());
 			
 		},
-		showUser: function(id) {
-			if(id){
-				var UserToView = new User({sid:id});
-				RegionManager.show(new app.UserView({model:UserToView}));
+		showUser: function(userId) {
+			if(userId){
+				if(!app.Users.get(userId)){
+					app.Users.add(new User({id:userId}))
+				}
+				
+				RegionManager.show(new app.UserView({model:app.Users.get(userId)}));
 			}else{
-				RegionManager.show(new app.UserView({model:app.UserDetails}));
+				
+				var loggedInId = app.BrowsingUserSession.get('id');
+				RegionManager.show(new app.UserView({model:app.Users.get(loggedInId)}));
 			}
 		},
 		showAdd: function( ) {
