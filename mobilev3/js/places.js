@@ -85,6 +85,7 @@ $( function( $ ) {
 		defaults: {
 			id:0,
 			name: '',
+			email: '',
 			updated_at : '',
 			todos: [],
 			recommended: [],
@@ -95,29 +96,16 @@ $( function( $ ) {
 		
 		initialize: function() {
 			
-			var self = this;
-			
 			this.todos = new RelatedPlaceList(this.get('todos'));
-			this.todos.url = function () {
-				return self.urlRoot + '/todos/'+self.get('id');
-			};
-			
 			this.recommended = new RelatedPlaceList(this.get('recommended'));
-			this.recommended.url = function () {
-				return self.urlRoot + '/recommended/'+self.get('id');
-			};
-			
 			this.created = new RelatedPlaceList(this.get('created'));
-			this.created.url = function () {
-				return self.urlRoot + '/created/'+self.get('id');
-			};
 			
 		},
 		saveRelatedModels : function(){
 			
 			var related_todos = this.todos.pluck('sid');
 			var related_recommended = this.recommended.pluck('sid');	
-			this.save({ todos: related_todos, recommended:related_recommended});
+			this.save({sid: this.id, todos: related_todos, recommended:related_recommended});
 		}
 		
 	});
@@ -141,7 +129,7 @@ $( function( $ ) {
 			longitude: 0,
 			address : null
         },
-		urlRoot: '/api/index.php/user.json',
+		
         initialize: function(){
 			
 			this.loadFromCookies();
@@ -429,10 +417,7 @@ $( function( $ ) {
 			this.form.reset();
 		},
 		loadResults: function () {
-			
-			this.model.todos.fetch();
-			this.model.recommended.fetch();
-			
+			this.model.fetch();
 			this.addAllToDos(this.model.todos);
 			this.addAllRecommended(this.model.recommended);
 		},
@@ -441,7 +426,7 @@ $( function( $ ) {
 			this.addAll(this.model.todos.search(letters));
 		},
 		searchRecommended: function(e) {
-			var letters = $("#filter-recommended-").val();
+			var letters = $("#filter-recommended").val();
 			this.addAll(this.model.recommended.search(letters));
 		}
 	});
@@ -661,7 +646,6 @@ $( function( $ ) {
 					
 					var loggedIn = new User({id: app.BrowsingUserSession.get('id')});
 					loggedIn.fetch();
-					
 					app.Users.add(loggedIn);
 				}
 			

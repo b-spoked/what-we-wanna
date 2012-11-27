@@ -57,6 +57,7 @@ class User {
 	}
 	
 	function put($id=NULL, $request_data=NULL) {
+		
 		return $this->userData->update($id, $request_data);
 	}
 	function delete($id=NULL) {
