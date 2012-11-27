@@ -157,9 +157,9 @@ class UserData
 	$name = mysql_escape_string($rec['name']);
         $email = mysql_escape_string($rec['email']);
         //$password= mysql_escape_string($rec['password']);
-        $newsletter= mysql_escape_string($rec['newsletter']);
-        $todos = mysql_escape_string($rec['todos']);
-        $recommended = mysql_escape_string($rec['recommended']);
+        $newsletter= false; //mysql_escape_string($rec['newsletter']);
+        $todos = $rec['todos'];
+        $recommended = $rec['recommended'];
 	
         $sql = "UPDATE user SET name = '$name', email ='$email', newsletter ='$newsletter', updated_at=NOW() WHERE id = $id";
         
