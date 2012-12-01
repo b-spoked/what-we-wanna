@@ -79,7 +79,7 @@ class UserData
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
             
-           $queryString = "SELECT id, name, description, address, latitude, longitude, recommended FROM place LEFT JOIN user_todo_place ON user_todo_place.todo_id =place.id WHERE user_todo_place.user_id = '{$id}'";
+           $queryString = "SELECT id, name, description, address, latitude, longitude, recommended FROM place LEFT JOIN user_todo_place ON user_todo_place.todo_id = place.id WHERE user_todo_place.user_id = '{$id}'";
 	    
             return $this->id2int($this->db->query($queryString)->fetchAll());
             
@@ -88,6 +88,42 @@ class UserData
 //SQLSTATE[42S02]: Base table or view not found: 1146 Table 'authors' doesn't exist
                 $this->install();
                 return $this->getTodos($id, TRUE);
+            }
+            throw new RestException(501, 'MySQL: ' . $e->getMessage());
+        }
+    }
+    
+    function getUsersThatRecommend($id, $installTableOnFailure = FALSE){
+        $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        try {
+	    
+	    $queryString = "SELECT id, name FROM user LEFT JOIN user_recommended_place ON user_recommended_place.user_id = user.id WHERE user_recommended_place.recommended_id = '{$id}'";
+	    
+            return $this->id2int($this->db->query($queryString)->fetchAll());
+            
+        } catch (PDOException $e) {
+            if (! $installTableOnFailure && $e->getCode() == '42S02') {
+//SQLSTATE[42S02]: Base table or view not found: 1146 Table 'authors' doesn't exist
+                $this->install();
+                return $this->getUsersThatRecommend($id, TRUE);
+            }
+            throw new RestException(501, 'MySQL: ' . $e->getMessage());
+        }
+    }
+    
+    function getUsersToDo($id, $installTableOnFailure = FALSE){
+        $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        try {
+	    
+	    $queryString = "SELECT id, name FROM user LEFT JOIN user_todo_place ON user_todo_place.user_id = user.id WHERE user_todo_place.todo_id = '{$id}'";
+	    
+            return $this->id2int($this->db->query($queryString)->fetchAll());
+            
+        } catch (PDOException $e) {
+            if (! $installTableOnFailure && $e->getCode() == '42S02') {
+//SQLSTATE[42S02]: Base table or view not found: 1146 Table 'authors' doesn't exist
+                $this->install();
+                return $this->getUsersToDo($id, TRUE);
             }
             throw new RestException(501, 'MySQL: ' . $e->getMessage());
         }
@@ -231,6 +267,7 @@ class UserData
 	    recommended_id INT REFERENCES place (id),
 	    PRIMARY KEY (user_id, recommended_id)
 	);");
+	
 	//todo places relationship
 	$this->db->exec(
         "CREATE TABLE user_todo_place

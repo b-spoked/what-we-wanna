@@ -81,17 +81,24 @@
 					</div>
 					<div class="six columns omega">
 							<p><%= address %></p>
-							<p><em><%= recommended %><i class="icon-thumbs-up"></i></em></p>
 							<p><em><strong><%= distance %>km</strong> away</em></p>
+							<button class="recommend-by btn btn-link">Recommended By <span class="badge badge-success">2</span></button>
+							<button class="on-todo-list btn btn-link">On Todo List <span class="badge badge-success">2</span></button>
 					</div>
 					<div class="two columns">
-						<div class="btn-group btn-group-vertical">
+						<div class="btn-group btn-group-vertical" data-toggle="buttons-checkbox">
 							<button class="map btn"><i class="icon-map-marker"></i> Show Map</button>
 							<button class="comments btn"><i class="icon-comments"></i> Comments</button>
 							<button class="bookmark btn"><i class="icon-star"></i> To-Do</button>
 							<button class="recommend btn"><i class="icon-thumbs-up"></i> Recommend</button>
 						</div>
 					</div>
+				</div>
+				<div id="recommended_<%= id %>" class="sixteen columns alpha" style="display:none;">
+				</div>
+				<div id="todo_<%= id %>" class="sixteen columns alpha" style="display:none;">
+				</div>
+				<div id="comments_<%= id %>" class="sixteen columns alpha" style="display:none;">
 				</div>
 				<div id="map_<%= id %>_canvas" class="sixteen columns alpha" style="height:320px; display:none;">
 				</div>
@@ -119,13 +126,19 @@
 		</script>
 		<script type="text/template" id="user-template">
 		<div class="view">
-				<div >
+				<div class="three columns alpha">
 					<img class="pull-left img-polaroid" src="http://placehold.it/64x64">
-					
-						<h3><%= name%></h3>
-						<% if(app.BrowsingUserSession.isLoggedIn(id)) { %>
-							<p><em><%= app.BrowsingUserSession.get("address") %></em> <button id="location" class="btn btn-link">Change Location</button></p>
-						<% } %>
+				</div>
+				<div class="three columns omega">
+					<h3><%= name%></h3>
+					<% if(app.BrowsingUserSession.isLoggedIn(id)) { %>
+						<p><em><%= email%></em>
+					<% } %>
+				</div>
+				<div class="ten columns">
+					<% if(app.BrowsingUserSession.isLoggedIn(id)) { %>
+						<p><em><%= app.BrowsingUserSession.get("address") %></em> <button id="location" class="btn btn-link">Change Location</button></p>
+					<% } %>
 				</div>
 				<div class="clear"></div>
 				<ul class="nav nav-tabs">
@@ -134,7 +147,7 @@
 					<li><a data-toggle="tab" href="#user-owned">Added</a></li>
 				</ul>	
 				<div class="tab-content">
-					<div class="tab-pane" id="user-todos">
+					<div class="active tab-pane" id="user-todos">
 						<blockquote><i class="icon-star"></i> Places on the todo list</blockquote>
 						<input type="text" id="filter-todos" placeholder="filter to do's...">
 						<ul id="todos-list"></ul>

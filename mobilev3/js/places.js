@@ -10,12 +10,12 @@ $( function( $ ) {
 		
 		defaults: {
 			id:0,
+			sid:0,
 			updated_at : '',
 			name: '',
 			description: '',
 			address: '',
-			recommended: 0,
-			distance: '??',
+			distance: 0,
 			latitude: 0,
 			longitude: 0
 		}
@@ -84,6 +84,7 @@ $( function( $ ) {
 
 		defaults: {
 			id:0,
+			sid:0,
 			name: '',
 			email: '',
 			updated_at : '',
@@ -96,8 +97,17 @@ $( function( $ ) {
 		
 		initialize: function() {
 			
+			var self = this;
+			
 			this.todos = new RelatedPlaceList(this.get('todos'));
+			this.todos.url = function () {
+				return self.urlRoot + '/todos/'+self.get('sid');
+			};
+			
 			this.recommended = new RelatedPlaceList(this.get('recommended'));
+			this.recommended.url = function () {
+				return self.urlRoot + '/recommended/'+self.get('sid');
+			};
 			this.created = new RelatedPlaceList(this.get('created'));
 			
 		},
@@ -107,7 +117,6 @@ $( function( $ ) {
 			var related_recommended = this.recommended.pluck('sid');	
 			this.save({sid: this.id, todos: related_todos, recommended:related_recommended});
 		}
-		
 	});
 	var RelatedPlaceList =  Backbone.Collection.extend({
 		model : Place,
@@ -225,7 +234,9 @@ $( function( $ ) {
 			'click .comments' : 'showComments',
 			'click .edit' : 'edit',
 			'click .bookmark' : 'addBookmark',
-			'click .recommend' : 'addRecommendation'
+			'click .recommend' : 'addRecommendation',
+			'click .on-todo-list' : 'showUsersToDo',
+			'click .recommend-by' : 'showUsersRecommend'
 		},
 
 		initialize: function() {
@@ -297,6 +308,16 @@ $( function( $ ) {
 
 			$('#comments_' + this.model.id).slideToggle('slow');
 			alert('show comments');
+		},
+		showUsersToDo : function() {
+
+			$('#todo_' + this.model.id).slideToggle('slow');
+			alert('show users todo');
+		},
+		showUsersRecommend : function() {
+
+			$('#recommended_' + this.model.id).slideToggle('slow');
+			alert('show users recommend');
 		},
 		addBookmark : function() {
 			var userId = app.BrowsingUserSession.get('id');
@@ -418,7 +439,9 @@ $( function( $ ) {
 		},
 		loadResults: function () {
 			this.model.fetch();
+			this.model.todos.fetch();
 			this.addAllToDos(this.model.todos);
+			this.model.recommended.fetch();
 			this.addAllRecommended(this.model.recommended);
 		},
 		searchToDos: function(e) {
@@ -613,7 +636,7 @@ $( function( $ ) {
 			this.form.reset();
 		},
 		loadResults: function () {
-			app.Places.storage.sync.full();
+			app.Places.fetch();
 		},
 		search: function(e) {
 			var letters = $("#filter-by").val();
@@ -656,8 +679,13 @@ $( function( $ ) {
 			RegionManager.show(new app.SearchPlacesView());
 		},
 		showResults: function(location,type) {
-			app.Places.locationOfPlace = location;
-			app.Places.typeOfPlace = type;
+			
+			if(location){
+				app.Places.locationOfPlace = location;
+			}
+			if(type){
+				app.Places.typeOfPlace = type;
+			}
 			RegionManager.show(new app.FoundPlacesView());
 			
 		},
