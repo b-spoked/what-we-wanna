@@ -680,11 +680,18 @@ $( function( $ ) {
 		},
 		showResults: function(location,type) {
 			
+			var search = false;
 			if(location){
+				search = true;
 				app.Places.locationOfPlace = location;
 			}
 			if(type){
+				search = true;
 				app.Places.typeOfPlace = type;
+			}
+			//ensure we get the latest from the server			
+			if(search){
+				app.Places.storage.sync.full();
 			}
 			RegionManager.show(new app.FoundPlacesView());
 			
