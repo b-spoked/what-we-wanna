@@ -47,6 +47,20 @@ class Place {
 		return $this->commentData->getAllForNote($noteID);
 	}
 	
+	/**
+	* @url GET /todousers/:id/
+	*/
+	function geTodoUsers($id=NULL) {
+		return $this->placeData->geTodoUsers($id);
+	}
+	
+	/**
+	* @url GET /recommendedusers/:id/
+	*/
+	function getRecommendedUsers($id=NULL) {
+		return $this->placeData->getRecommendedUsers($id);
+	}
+	
 	function post($request_data=NULL) {
 		return $this->placeData->insert($this->_validate($request_data));
 	}

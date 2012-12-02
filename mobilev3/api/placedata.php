@@ -39,6 +39,33 @@ class PlaceData
             throw new RestException(501, 'MySQL: ' . $e->getMessage());
         }
     }
+    
+    function getRecommendedUsers($id){
+        $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        try {
+	    
+	    $queryString = "SELECT id, name FROM user LEFT JOIN user_recommended_place ON user_recommended_place.user_id = user.id WHERE user_recommended_place.recommended_id = '{$id}'";
+	    
+            return $this->id2int($this->db->query($queryString)->fetchAll());
+            
+        } catch (PDOException $e) {
+            throw new RestException(501, 'MySQL: ' . $e->getMessage());
+        }
+    }
+    
+    function getTodoUsers($id){
+        $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        try {
+	    
+	    $queryString = "SELECT id, name FROM user LEFT JOIN user_todo_place ON user_todo_place.user_id = user.id WHERE user_todo_place.todo_id = '{$id}'";
+	    
+            return $this->id2int($this->db->query($queryString)->fetchAll());
+            
+        } catch (PDOException $e) {
+            throw new RestException(501, 'MySQL: ' . $e->getMessage());
+        }
+    }
+    
     function getAll ($installTableOnFailure = FALSE)
     {
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

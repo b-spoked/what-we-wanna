@@ -17,7 +17,27 @@ $( function( $ ) {
 			address: '',
 			distance: 0,
 			latitude: 0,
-			longitude: 0
+			longitude: 0,
+			usertodo: [],
+			userrecommended: []
+		},
+		
+		urlRoot: "/api/index.php/place.json",
+		
+		initialize: function() {
+			
+			var self = this;
+			
+			this.usertodo = new RelatedUserList(this.get('usertodo'));
+			this.usertodo.url = function () {
+				return self.urlRoot + '/todousers/'+self.get('sid');
+			};
+			
+			this.userrecommended = new RelatedUserList(this.get('userrecommended'));
+			this.userrecommended.url = function () {
+				return self.urlRoot + '/recommendedusers/'+self.get('sid');
+			};
+			
 		}
 
 	});
@@ -127,6 +147,18 @@ $( function( $ ) {
 			var pattern = new RegExp(letters,"gi");
 			return _(this.filter( function(data) {
 				return pattern.test(data.get("name")) ||pattern.test(data.get("description"));
+			}));
+		}
+	});
+	var RelatedUserList =  Backbone.Collection.extend({
+		model : User,
+		search : function(letters) {
+			if(letters == "")
+				return this;
+
+			var pattern = new RegExp(letters,"gi");
+			return _(this.filter( function(data) {
+				return pattern.test(data.get("name"));
 			}));
 		}
 	});
@@ -310,13 +342,14 @@ $( function( $ ) {
 			alert('show comments');
 		},
 		showUsersToDo : function() {
-
+			this.model.usertodo.fetch();
 			$('#todo_' + this.model.id).slideToggle('slow');
 			alert('show users todo');
 		},
 		showUsersRecommend : function() {
-
+			this.model.userrecommended.fetch();
 			$('#recommended_' + this.model.id).slideToggle('slow');
+			
 			alert('show users recommend');
 		},
 		addBookmark : function() {
