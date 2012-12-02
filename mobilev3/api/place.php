@@ -50,8 +50,8 @@ class Place {
 	/**
 	* @url GET /todousers/:id/
 	*/
-	function geTodoUsers($id=NULL) {
-		return $this->placeData->geTodoUsers($id);
+	function getTodoUsers($id=NULL) {
+		return $this->placeData->getTodoUsers($id);
 	}
 	
 	/**
