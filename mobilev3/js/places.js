@@ -18,8 +18,8 @@ $( function( $ ) {
 			distance: 0,
 			latitude: 0,
 			longitude: 0,
-			usertodo: [],
-			userrecommended: []
+			todousers: [],
+			recommendedusers: []
 		},
 		
 		urlRoot: "/api/index.php/place.json",
@@ -28,13 +28,13 @@ $( function( $ ) {
 			
 			var self = this;
 			
-			this.usertodo = new RelatedUserList(this.get('usertodo'));
-			this.usertodo.url = function () {
+			this.todousers = new RelatedUserList(this.get('todousers'));
+			this.todousers.url = function () {
 				return self.urlRoot + '/todousers/'+self.get('sid');
 			};
 			
-			this.userrecommended = new RelatedUserList(this.get('userrecommended'));
-			this.userrecommended.url = function () {
+			this.recommendedusers = new RelatedUserList(this.get('recommendedusers'));
+			this.recommendedusers.url = function () {
 				return self.urlRoot + '/recommendedusers/'+self.get('sid');
 			};
 			
@@ -273,7 +273,8 @@ $( function( $ ) {
 
 		initialize: function() {
 			this.model.on( 'change', this.render, this );
-			
+			this.model.todousers.on( 'reset', this.addUsersToDo, this );
+			this.model.recommendedusers.on( 'reset', this.addUsersRecommend, this );
 		},
 		// Re-render the titles of the todo item.
 		render: function() {
@@ -342,16 +343,44 @@ $( function( $ ) {
 			alert('show comments');
 		},
 		showUsersToDo : function() {
-			this.model.usertodo.fetch();
-			$('#todo_' + this.model.id).slideToggle('slow');
-			alert('show users todo');
+			this.model.todousers.fetch();
+			var todoId = '#todo_' + this.model.get('id');
+			$(todoId).slideToggle('slow');
+			
+		},
+		addUsersToDo : function() {
+			var todoUsersId = '#todo_' + this.model.get('id') + '_users';
+			
+			$(todoUsersId).html('');
+		
+			this.model.todousers.each(function(user) {
+				var view = new app.RelatedUserView({
+					model: user
+				});
+				$(todoUsersId).append( view.render().el );
+			});
+			
 		},
 		showUsersRecommend : function() {
-			this.model.userrecommended.fetch();
-			$('#recommended_' + this.model.id).slideToggle('slow');
-			
-			alert('show users recommend');
+			this.model.recommendedusers.fetch();
+			var recommendedId = '#recommended_' + this.model.get('id');
+			$(recommendedId).slideToggle('slow');
 		},
+		addUsersRecommend : function() {
+			
+			var recommendedUsersId = '#recommended_' + this.model.get('id') +'_users';
+			$(recommendedUsersId).html('');
+		
+			this.model.recommendedusers.each(function(user) {
+				console.log(user);
+				var view = new app.RelatedUserView({
+					model: user
+				});
+				$(recommendedUsersId).append( view.render().el );
+			});
+			
+		},
+		
 		addBookmark : function() {
 			var userId = app.BrowsingUserSession.get('id');
 			if(app.Users.get(userId)){
@@ -366,6 +395,18 @@ $( function( $ ) {
 				app.Users.get(userId).recommended.push(this.model);
 				app.Users.get(userId).saveRelatedModels();
 			}
+		}
+	});
+	
+	app.RelatedUserView = Backbone.View.extend({
+
+		tagName:  'li',
+
+		template: _.template( $('#related-user-template').html() ),
+
+		render: function() {
+			this.$el.html( this.template( this.model.toJSON() ) );
+			return this;
 		}
 	});
 

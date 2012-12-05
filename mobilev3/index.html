@@ -95,18 +95,21 @@
 					</div>
 				</div>
 				<div id="recommended_<%= id %>" class="sixteen columns alpha" style="display:none;">
+					<ul id="recommended_<%= id %>_users"></ul>
 				</div>
 				<div id="todo_<%= id %>" class="sixteen columns alpha" style="display:none;">
+					<ul id="todo_<%= id %>_users"></ul>
 				</div>
 				<div id="comments_<%= id %>" class="sixteen columns alpha" style="display:none;">
 				</div>
 				<div id="map_<%= id %>_canvas" class="sixteen columns alpha" style="height:320px; display:none;">
 				</div>
-				<div id="comments_<%= id %>" class="sixteen columns alpha" style="display:none;">
-				</div>
 			</div>
 			<div class="clear"></div>
 			<hr />
+		</script>
+		<script type="text/template" id="related-user-template">
+			<a class="btn btn-link" href="#user/"+<%= id %>><i class="icon-user"></i> <%= name %></a>
 		</script>
 		<script type="text/template" id="search-template">
 		<div class="view">
