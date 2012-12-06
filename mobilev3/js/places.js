@@ -20,7 +20,8 @@ $( function( $ ) {
 			longitude: 0,
 			todousers: [],
 			recommendedusers: [],
-			showRelatedToUser:false
+			canRemoveRecommended:false,
+			canRemoveTodo:false
 		},
 		
 		urlRoot: "/api/index.php/place.json",
@@ -496,7 +497,7 @@ $( function( $ ) {
 		},
 		addToDo: function( place ) {
 			
-			place.set({showRelatedToUser: true});
+			place.set({canRemoveTodo: true});
 			
 			var view = new app.PlaceView({
 				model: place
@@ -515,7 +516,7 @@ $( function( $ ) {
 		},
 		addRecommended: function( place ) {
 			
-			place.set({showRelatedToUser: true});
+			place.set({canRemoveRecommended: true});
 			
 			var view = new app.PlaceView({
 				model: place
