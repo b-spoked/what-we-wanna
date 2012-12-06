@@ -86,12 +86,23 @@
 							<button class="on-todo-list btn btn-link">On Todo List <span class="badge badge-success">2</span></button>
 					</div>
 					<div class="two columns">
-						<div class="btn-group btn-group-vertical" data-toggle="buttons-checkbox">
-							<button class="map btn"><i class="icon-map-marker"></i> Show Map</button>
-							<button class="comments btn"><i class="icon-comments"></i> Comments</button>
-							<button class="bookmark btn"><i class="icon-star"></i> To-Do</button>
-							<button class="recommend btn"><i class="icon-thumbs-up"></i> Recommend</button>
-						</div>
+					
+						<% if(showRelatedToUser) { %>
+							<div class="btn-group btn-group-vertical" data-toggle="buttons-checkbox">
+								<button class="map btn"><i class="icon-map-marker"></i> Show Map</button>
+								<button class="comments btn"><i class="icon-comments"></i> Comments</button>
+								<button class="remove-bookmark btn"><i class="icon-star"></i> Remove To-Do</button>
+								<button class="remove-recommend btn"><i class="icon-thumbs-up"></i> Remove Recommend</button>
+							</div>
+						<% } else { %>
+							<div class="btn-group btn-group-vertical" data-toggle="buttons-checkbox">
+								<button class="map btn"><i class="icon-map-marker"></i> Show Map</button>
+								<button class="comments btn"><i class="icon-comments"></i> Comments</button>
+								<button class="bookmark btn"><i class="icon-star"></i> To-Do</button>
+								<button class="recommend btn"><i class="icon-thumbs-up"></i> Recommend</button>
+							</div>
+						<% } %>
+						
 					</div>
 				</div>
 				<div id="recommended_<%= id %>" class="six columns offset-by-six" style="display:none;">

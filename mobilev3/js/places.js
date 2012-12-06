@@ -19,7 +19,8 @@ $( function( $ ) {
 			latitude: 0,
 			longitude: 0,
 			todousers: [],
-			recommendedusers: []
+			recommendedusers: [],
+			showRelatedToUser:false
 		},
 		
 		urlRoot: "/api/index.php/place.json",
@@ -267,6 +268,8 @@ $( function( $ ) {
 			'click .edit' : 'edit',
 			'click .bookmark' : 'addBookmark',
 			'click .recommend' : 'addRecommendation',
+			'click .remove-bookmark' : 'removeBookmark',
+			'click .remove-recommend' : 'removeRecommendation',
 			'click .on-todo-list' : 'showUsersToDo',
 			'click .recommend-by' : 'showUsersRecommend'
 		},
@@ -278,7 +281,8 @@ $( function( $ ) {
 		},
 		// Re-render the titles of the todo item.
 		render: function() {
-			this.$el.html( this.template( this.model.toJSON() ) );
+			
+			this.$el.html( this.template( this.model.toJSON()) );
 			this.form = this.$('.edit');
 			return this;
 		},
@@ -395,6 +399,21 @@ $( function( $ ) {
 				app.Users.get(userId).recommended.push(this.model);
 				app.Users.get(userId).saveRelatedModels();
 			}
+		},
+		removeBookmark : function() {
+			var userId = app.BrowsingUserSession.get('id');
+			if(app.Users.get(userId)){
+				app.Users.get(userId).todos.remove(this.model);
+				app.Users.get(userId).saveRelatedModels();
+			}
+		},
+		removeRecommendation : function() {
+			
+			var userId = app.BrowsingUserSession.get('id');
+			if(app.Users.get(userId)){
+				app.Users.get(userId).recommended.remove(this.model);
+				app.Users.get(userId).saveRelatedModels();
+			}
 		}
 	});
 	
@@ -476,13 +495,16 @@ $( function( $ ) {
 			$(this.el).show(500);
 		},
 		addToDo: function( place ) {
+			
+			place.set({showRelatedToUser: true});
+			
 			var view = new app.PlaceView({
 				model: place
 			});
 			$('#todos-list').append( view.render().el );
 		},
 		addAllToDos: function(places) {
-
+			
 			if(places == null) {
 				places = this.model.todos;
 			}
@@ -492,6 +514,9 @@ $( function( $ ) {
 			
 		},
 		addRecommended: function( place ) {
+			
+			place.set({showRelatedToUser: true});
+			
 			var view = new app.PlaceView({
 				model: place
 			});
