@@ -105,10 +105,11 @@ $( function( $ ) {
 	var User = Backbone.Model.extend({
 
 		defaults: {
-			id:0,
-			sid:0,
+			id:'',
+			sid:'',
 			name: '',
 			email: '',
+			thumbnail: '',
 			updated_at : '',
 			todos: [],
 			recommended: [],
@@ -166,12 +167,13 @@ $( function( $ ) {
 	});
 	var UserSession = Backbone.Model.extend({
         defaults: {
+			id:'',
             loggedIn: false,
-			name:null,
+			name:'',
 			latitude: 0,
 			longitude: 0,
 			address : null
-        },
+		},
 		
         initialize: function(){
 			
@@ -247,11 +249,12 @@ $( function( $ ) {
             this.set({longitude : $.cookie('longitude')});
         }
     })
+	
 	app.Places = new PlaceList();
 	app.Users = new UserList();
-	app.LoggedInUser = new User();
-	
+	app.AuthenticatedUser = new FacebookUser();
 	app.BrowsingUserSession = new UserSession();
+	
 	app.PlaceView = Backbone.View.extend({
 
 		//... is a list tag.
@@ -574,36 +577,75 @@ $( function( $ ) {
 
 		el: "#app-nav",
 		
-		events: {
-			"click .signout" : "signOut"
-		},
-		
 		appTemplate: _.template( $('#nav-template').html()),
 		
 		initialize: function() {
 			_.bindAll(this, "render");
-			app.BrowsingUserSession.bind('change:loggedIn',this.render);
+			app.AuthenticatedUser.bind('change',this.updateUsersDetails);
 			this.render();
 		},
 		render: function() {
-			$(this.el).html(this.appTemplate(app.BrowsingUserSession.toJSON()));
+			$(this.el).html(this.appTemplate(app.AuthenticatedUser.toJSON()));
 		},
-		signOut:function(){
-			app.BrowsingUserSession.clearCookies();
-			this.render();
+		updateUsersDetails:function(){
+			console.info('login status change');
+			if(app.AuthenticatedUser.isConnected()){
+				
+				//ToDo:check thsi logic
+				if(app.BrowsingUserSession.get('id')){
+					//check is in users
+					if(!app.Users.get(app.BrowsingUserSession.get('id'))){
+						
+						var authenticatedUser = new User({sid:app.AuthenticatedUser.get('id'),
+									name:app.AuthenticatedUser.get('name'),
+									email:'todo',
+									thumbnail:app.AuthenticatedUser.get('pictures').square});
+						
+						authenticatedUser.save();
+						
+						app.Users.add(authenticatedUser);
+					}
+				}else{
+					
+					//create user
+					var authenticatedUser = new User({sid:app.AuthenticatedUser.get('id'),
+										name:app.AuthenticatedUser.get('name'),
+										email:'todo',
+										thumbnail:app.AuthenticatedUser.get('pictures').square});
+					
+					authenticatedUser.save();
+				
+					app.Users.add(authenticatedUser);
+					//create user session
+					app.BrowsingUserSession.set({loggedIn:true,
+												id:authenticatedUser.get('id'),
+												name:authenticatedUser.get('name'),
+												thumbnail:authenticatedUser.get('thumbnail')});
+				}
+			}else{
+				app.BrowsingUserSession.set({loggedIn:false});
+			}
 		}
+	
 	});
 	
-	app.SignupView = Backbone.View.extend({
+	app.LoginView = Backbone.View.extend({
 
-		signUpTemplate: _.template( $('#signup-template').html()),
+		loginTemplate: _.template( $('#login-template').html()),
+		
 		events: {
-			'submit #signup-form': 'signup',
-			'submit #signin-form': 'signin'
+			"click #login" : "userLogin",
+			"click #logout" : "userLogout"
 		},
-
+		initialize: function() {
+			_.bindAll(this, "render");
+			app.AuthenticatedUser.on('facebook:unauthorized',this.fbUnauthorized);
+			app.AuthenticatedUser.on('facebook:connected',this.fbConnected);
+			app.AuthenticatedUser.on('facebook:disconnected',this.fbDisconnected);
+			this.render();
+		},
 		render: function() {
-			$(this.el).html(this.signUpTemplate());
+			$(this.el).html(this.loginTemplate(app.AuthenticatedUser.toJSON()));
 			$(this.el).hide();
 		},
 		close: function() {
@@ -613,63 +655,40 @@ $( function( $ ) {
 		onShow: function() {
 			$(this.el).show(500);
 		},
-		signup: function(e){
-			e.preventDefault();
-			
-			var signUpData = $("#signup-form").serialize();
-			
-			console.log(signUpData);
-			
-			var signUpForm = $.ajax({
-				type: "POST",
-				url: "/api/index.php/user.json",
-				dataType: "JSON",
-				data: signUpData
-			});
-				  
-			signUpForm.done(function(userData){
-				if(userData != false){
-					
-					app.Users.add(new User({id:userData.id,name:userData.name, email:userData.email}));
-					app.BrowsingUserSession.set({loggedIn:true,id:userData.id,name:userData.name});
-					window.location.replace('#');
-				}
-				
-			});
+		
+		fbUnauthorized:  function(model, response) {
+			console.info('facebook:unauthorized');
+			$('#loginstatus').text(response.status);
 		},
-		signin: function(e){
-			e.preventDefault();
-			
-			var loginData = $("#signin-form").serialize();
-			
-			console.log(loginData);
-			
-			var loginForm = $.ajax({
-				type: "POST",
-				url: "/api/index.php/user.json/login",
-				dataType: "JSON",
-				data: loginData
-			});
-				  
-			loginForm.done(function(userData){
-				
-				if(userData != false){
-					app.Users.add(new User({id:userData.id,name:userData.name, email:userData.email}));
-					app.BrowsingUserSession.set({loggedIn:true,id:userData.id,name:userData.name});
-					window.location.replace('#');
-				}
-				
-			});
+
+		fbConnected: function(model, response) {
+			console.info('facebook:connected');
+			$('#loginstatus').text(response.status);
+			$('#login').attr('disabled', true);
+			$('#logout').attr('disabled', false);
+		},
+
+		fbDisconnected: function(model, response) {
+			console.info('facebook:disconnected');
+			$('#loginstatus').text(response.status);
+			$('#login').attr('disabled', false);
+			$('#logout').attr('disabled', true)
+		},
+		userLogin : function(){
+			app.AuthenticatedUser.login()
+		},
+		userLogout : function(){
+			app.AuthenticatedUser.logout()
 		}
 	});
 	
-
-	app.FoundPlacesView = Backbone.View.extend({
+	app.PlacesView = Backbone.View.extend({
 
 		foundPlacesTemplate: _.template( $('#found-template').html()),
 
 		events: {
-			"keyup #filter-by" : "search"
+			"keyup #filter-by" : "search",
+			'submit #find-places': 'performSearch'
 		},
 
 		initialize: function() {
@@ -689,6 +708,16 @@ $( function( $ ) {
 			this.loadResults();
 			$(this.el).show(500);
 			$('#add-log').show(500);
+		},
+		performSearch: function() {
+			var locationOfPlace = $("#locationfilter").val().trim();
+			var typeofPlace = $("#typefilter").val().trim();
+
+			var searchQuery = '#/'+locationOfPlace;
+			if(typeofPlace) {
+				searchQuery += '/'+typeofPlace;
+			}
+			AppRouter.navigate(searchQuery);
 		},
 		addOne: function( place ) {
 
@@ -749,36 +778,20 @@ $( function( $ ) {
 		navigationView : null,
 
 		routes: {
-			"":"showSearch",
-			"results/": "showResults",
-			"results/:location": "showResults",
-			"results/:location/:type": "showResults",
+			"": "showPlaces",
+			"/:location": "showPlaces",
+			"/:location/:type": "showPlaces",
 			"user/" : "showUser",
 			"user/:id" : "showUser",
 			"addplace/" : "showAdd",
-			"signup/" : "showSignup",
-			"signin/" : "showSignup"
+			"join/" : "showLogin"
 		},
 		
 		
 		initialize: function() {
 			this.navigationView = new app.NavView();
-			if(app.BrowsingUserSession.get('loggedIn')){
-				
-				if(!app.Users.get(app.BrowsingUserSession.get('id'))){
-					
-					var loggedIn = new User({id: app.BrowsingUserSession.get('id')});
-					loggedIn.fetch();
-					app.Users.add(loggedIn);
-				}
-			
-			}
 		},
-
-		showSearch: function() {
-			RegionManager.show(new app.SearchPlacesView());
-		},
-		showResults: function(location,type) {
+		showPlaces: function(location,type) {
 			
 			var search = false;
 			if(location){
@@ -793,8 +806,7 @@ $( function( $ ) {
 			if(search){
 				app.Places.storage.sync.full();
 			}
-			RegionManager.show(new app.FoundPlacesView());
-			
+			RegionManager.show(new app.PlacesView());
 		},
 		showUser: function(userId) {
 			if(userId){
@@ -812,8 +824,8 @@ $( function( $ ) {
 		showAdd: function( ) {
 			RegionManager.show(new app.AddPlaceView());
 		},
-		showSignup: function( ) {
-			RegionManager.show(new app.SignupView());
+		showLogin: function( ) {
+			RegionManager.show(new app.LoginView());
 		}
 	});
 

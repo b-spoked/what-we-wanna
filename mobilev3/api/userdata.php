@@ -26,7 +26,7 @@ class UserData
     {
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
-            $sql = 'SELECT id, name, email FROM user WHERE id = ' . mysql_escape_string(
+            $sql = 'SELECT id, name, email, thirdparty_id, newsletter FROM user WHERE id = ' . mysql_escape_string(
             $id);
             return $this->id2int($this->db->query($sql)
                 ->fetch());
@@ -45,7 +45,7 @@ class UserData
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
             
-            $stmt = $this->db->query("SELECT name FROM user WHERE email = '{$email}'");
+            $stmt = $this->db->query("SELECT id, name, thirdparty_id FROM user WHERE email = '{$email}'");
             return $this->id2int($stmt->fetchAll());
             
         } catch (PDOException $e) {
@@ -58,18 +58,33 @@ class UserData
         }
     }
     
-   function login($email,$pw, $installTableOnFailure = FALSE){
+   function getIdFromThirdpartyId($thirdparty_id, $installTableOnFailure = FALSE){
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
             
-	    $queryString = "SELECT id, name, email FROM user WHERE email = '{$email}' AND password = SHA1('$pw')";
-            return $this->id2int($this->db->query($queryString)->fetch());
-            
+	    $queryString = "SELECT id FROM user WHERE thirdparty_id = '{$thirdparty_id}'"; 
+	    $usersId = $this->id2int($this->db->query($queryString)->fetch());
+	    //insert dummy record
+	    if ($usersId){
+		//return $usersId;
+	    }else {
+		
+		$sql = "INSERT INTO user (thirdparty_id,name,email,newsletter,updated_at) VALUES ('$thirdparty_id', 'empty', 'empty', 'false', NOW())";  
+    
+		if (!$this->db->query($sql)){
+		    return FALSE;
+		}
+		
+		$usersId = $this->id2int($this->db->query($queryString)->fetch());
+	
+	    }
+	    return $usersId;
+	
         } catch (PDOException $e) {
             if (! $installTableOnFailure && $e->getCode() == '42S02') {
 //SQLSTATE[42S02]: Base table or view not found: 1146 Table 'authors' doesn't exist
                 $this->install();
-                return $this->login($email,$pw, TRUE);
+                return $this->getIdFromThirdpartyId($thirdparty_id, TRUE);
             }
             throw new RestException(501, 'MySQL: ' . $e->getMessage());
         }
@@ -130,14 +145,15 @@ class UserData
     
     function insert ($rec)
     {
+	
+        $id= mysql_escape_string($rec['id']);
         $name = mysql_escape_string($rec['name']);
         $email = mysql_escape_string($rec['email']);
-        //$password= mysql_escape_string($rec['password']);
         $newsletter= mysql_escape_string($rec['newsletter']);
-        $todos = mysql_escape_string($rec['todos']);
-        $recommended = mysql_escape_string($rec['recommended']);
+        $todos = $rec['todos'];
+        $recommended = $rec['recommended'];
 	
-        $sql = "INSERT INTO user (name,email,newsletter,updated_at) VALUES ('$name', '$email',' $newsletter', NOW())";  
+        $sql = "INSERT INTO user (id,name,email,newsletter,updated_at) VALUES ('$id', '$name', '$email',' $newsletter', NOW())";  
     
 	if (!$this->db->query($sql)){
             return FALSE;
@@ -145,8 +161,12 @@ class UserData
 	
 	$id = $this->get($this->db->lastInsertId());
 	
-	$this->insertTodos($id,$todos);
-	$this->insertRecommended($id,$recommended);
+	if($todos){
+	    $this->insertTodos($id,$todos);
+	}
+	if($recommended){
+	    $this->insertRecommended($id,$recommended);
+	}
 	
 	return $id;
         
@@ -156,8 +176,7 @@ class UserData
     {
 	$name = mysql_escape_string($rec['name']);
         $email = mysql_escape_string($rec['email']);
-        //$password= mysql_escape_string($rec['password']);
-        $newsletter= false; //mysql_escape_string($rec['newsletter']);
+        $newsletter= mysql_escape_string($rec['newsletter']);
         $todos = $rec['todos'];
         $recommended = $rec['recommended'];
 	
@@ -166,8 +185,13 @@ class UserData
 	if (! $this->db->query($sql)){
             return FALSE;
 	}
-	$this->insertTodos($id,$todos);
-	$this->insertRecommended($id,$recommended);
+	
+	if($todos){
+	    $this->insertTodos($id,$todos);
+	}
+	if($recommended){
+	    $this->insertRecommended($id,$recommended);
+	}
 	
         return $this->get($id);
     }
@@ -215,11 +239,10 @@ class UserData
     {
         $this->db->exec(
         "CREATE TABLE user (
-            id INT AUTO_INCREMENT PRIMARY KEY ,
+            id INT PRIMARY KEY ,
             name TEXT NOT NULL ,
             email TEXT NOT NULL,
 	    newsletter BOOL NOT NULL,
-	    password VARCHAR(40) NOT NULL,
             updated_at DATETIME
         );");
 	
@@ -250,9 +273,9 @@ class UserData
 	);");
 	//demo data
 	$this->db->exec(
-        "INSERT INTO user (name, email,password, newsletter,updated_at) VALUES ('Demo Dave','demo.dave@whatwewanna.co.nz','test123',0,NOW());
-        INSERT INTO user (name, email,password, newsletter,updated_at) VALUES ('Demo Daisy','demo.daisey@whatwewanna.co.nz','test123',1,NOW());
-	INSERT INTO user (name, email,password, newsletter,updated_at) VALUES ('Demo Donna','demo.donna@whatwewanna.co.nz','test123,1,NOW());
+        "INSERT INTO user (name, email,thirdparty_id, newsletter,updated_at) VALUES ('Demo Dave','demo.dave@whatwewanna.co.nz','test123',0,NOW());
+        INSERT INTO user (name, email,thirdparty_id, newsletter,updated_at) VALUES ('Demo Daisy','demo.daisey@whatwewanna.co.nz','test123',1,NOW());
+	INSERT INTO user (name, email,thirdparty_id, newsletter,updated_at) VALUES ('Demo Donna','demo.donna@whatwewanna.co.nz','test123,1,NOW());
             ");
     }
 }

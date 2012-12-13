@@ -8,33 +8,25 @@
 		<link rel="stylesheet" href="stylesheets/skeleton.css">
 		<link rel="stylesheet" href="stylesheets/font-awesome.css" />
 		<link rel="stylesheet" href="stylesheets/bootstrap.min.css" />
+		<script>
+			window.fbAsyncInit = function() {
+				 console.info('FB jssdk loaded');
+				FB.init({
+					appId: '230032940372423'
+				});
+			};
+			// Load the SDK Asynchronously
+			(function(d){
+			   var js, id = 'facebook-jssdk', ref = d.getElementsByTagName('script')[0];
+			   if (d.getElementById(id)) {return;}
+			   js = d.createElement('script'); js.id = id; js.async = true;
+			   js.src = "//connect.facebook.net/en_US/all.js";
+			   ref.parentNode.insertBefore(js, ref);
+			 }(document));
+		</script>
 	</head>
 	<body>
-		<div id="fb-root"></div>
-<script>
-  // Additional JS functions here
-  window.fbAsyncInit = function() {
-    FB.init({
-      appId      : '230032940372423', // App ID
-      channelUrl : '//WWW.whatwewanna.co.nz/channel.html', // Channel File
-      status     : true, // check login status
-      cookie     : true, // enable cookies to allow the server to access the session
-      xfbml      : true  // parse XFBML
-    });
-
-    // Additional init code here
-
-  };
-
-  // Load the SDK Asynchronously
-  (function(d){
-     var js, id = 'facebook-jssdk', ref = d.getElementsByTagName('script')[0];
-     if (d.getElementById(id)) {return;}
-     js = d.createElement('script'); js.id = id; js.async = true;
-     js.src = "//connect.facebook.net/en_US/all.js";
-     ref.parentNode.insertBefore(js, ref);
-   }(document));
-</script>
+		
 		<section id="wanna-app">
 			<section id="app-nav">
 				
@@ -53,21 +45,20 @@
 					<div class="container">
 						<a class="brand" href="#/"><i class="icon-pushpin"></i> What We Wanna</a>
 						<ul class="nav">
-							<li><a href="#/">Search</a></li>
-							<li><a href="#results/">Places</a></li>
+							<li><a href="#/">Places</a></li>
 							<li><a href="#user/">User</a></li>
 						</ul>
 						<div class="pull-right">
-								<% if(loggedIn) { %>
-									<a href="#user/" class="btn">Hi <%= name%></a>
-									<button class="signout btn">Sign-Out</button>
-								<% } else { %>
-									<a href="#signin/" class="btn btn-success">Sign-In</a>
-									<a href="#signup/" class="btn btn-link">Sign-Up</a>
-								<% } %>
+						<% if(app.AuthenticatedUser.isConnected()) { %>
+							<a href="#join/" class="btn">Logout</a>
+						<% } else { %>
+							<a href="#join/" class="btn btn-primary"> Join</a>
+							<a href="#join/" class="btn">Login</a>
+						<% } %>	
 						</div>
 					</div>
 				</div>
+				<div id="fb-root"></div>
 			</div>
 		</script>
 		<script type="text/template" id="place-template">
@@ -149,32 +140,40 @@
 		</script>
 		<script type="text/template" id="user-template">
 		<div class="view">
-				<div class="three columns alpha">
-					<img class="pull-left img-polaroid" src="http://placehold.it/64x64">
-				</div>
-				<div class="three columns omega">
-					<h3><%= name%></h3>
-					<% if(app.BrowsingUserSession.isLoggedIn(id)) { %>
-						<p><em><%= email%></em>
-					<% } %>
-				</div>
-				<div class="ten columns">
-					<% if(app.BrowsingUserSession.isLoggedIn(id)) { %>
-						<p><em><%= app.BrowsingUserSession.get("address") %></em> <button id="location" class="btn btn-link">Change Location</button></p>
-					<% } %>
-				</div>
+				<img class="pull-left img-polaroid" src="<%= thumbnail%>">
+				<h3><%= name%></h3>
 				<div class="clear"></div>
 				<ul class="nav nav-tabs">
+				<% if(app.BrowsingUserSession.isLoggedIn(id)) { %>
+					<li class="active"><a data-toggle="tab" href="#user-account">Account</a></li>
+					<li><a data-toggle="tab" href="#user-todos">To Do List</a></li>
+				<% } else { %>
 					<li class="active"><a data-toggle="tab" href="#user-todos">To Do List</a></li>
+				<% } %>
 					<li><a data-toggle="tab" href="#user-recommended">Recommended</a></li>
 					<li><a data-toggle="tab" href="#user-owned">Added</a></li>
 				</ul>	
 				<div class="tab-content">
-					<div class="active tab-pane" id="user-todos">
-						<blockquote><i class="icon-star"></i> Places on the todo list</blockquote>
-						<input type="text" id="filter-todos" placeholder="filter to do's...">
-						<ul id="todos-list"></ul>
-					</div>
+					<% if(app.BrowsingUserSession.isLoggedIn(id)) { %>
+						<div class="active tab-pane" id="user-account">
+							<blockquote><i class="icon-user"></i> Your account</blockquote>
+							<h3><%= name%></h3>
+							<p>email: <%= email%></p>
+							location:<input id="address" name="address" type="text" value="<%= app.BrowsingUserSession.get("address") %>" />
+							<small>NOTE: Your location is only used to show the distance to places</small>
+						</div>
+						<div class="tab-pane" id="user-todos">
+							<blockquote><i class="icon-star"></i> Places on the todo list</blockquote>
+							<input type="text" id="filter-todos" placeholder="filter to do's...">
+							<ul id="todos-list"></ul>
+						</div>
+					<% } else { %>
+						<div class="active tab-pane" id="user-todos">
+							<blockquote><i class="icon-star"></i> Places on the todo list</blockquote>
+							<input type="text" id="filter-todos" placeholder="filter to do's...">
+							<ul id="todos-list"></ul>
+						</div>
+					<% } %>
 					<div class="tab-pane" id="user-recommended">
 						<blockquote><i class="icon-thumbs-up"></i> Places that have been recommended</blockquote>
 						<input type="text" id="filter-recommended" placeholder="filter recommended...">
@@ -188,65 +187,30 @@
 				</div>
 		</div>	
 		</script>
-		<script type="text/template" id="signup-template">
+		<script type="text/template" id="login-template">
 		<div class="view">
-			<ul class="nav nav-tabs" id="sign-up-in-tabs">
-				<li class="active"><a data-toggle="tab" href="#sign-in-tab">Sign In</a></li>
-				<li><a data-toggle="tab" href="#sign-up-tab">Sign Up</a></li>
-			</ul>	
-			<div class="tab-content">
-				<div class="tab-pane active" id="sign-in-tab">
-					<div class="hero-unit">
-						<form class="form-horizontal" id="signin-form" method="post">
-							<h2>Account Sign-In</h2>
-							<div class="control-group">
-								<input type="email" name="email" id="signin-email" value="" placeholder="Email"  />
-							</div>	
-							<div class="control-group">
-								<input type="password" name="password" id="signin-pw" placeholder="Password"  />
-							</div>
-							<div class="control-group">
-								<button type="submit" class="btn btn-success btn-large">Sign In</button>
-							</div>
-						</form>
-					</div>
+			<div class="hero-unit">
+				<div class="eight columns alpha">
+					<h2>Welcome</h2>
+					
+					<% if(app.AuthenticatedUser.isConnected()) { %>
+						<a href="#user/" class="btn btn-primary">Hi <%= name%></a>
+						<button id="logout" class="btn">Logout</button>
+					<% } else { %>	
+						<button id="login" class="btn btn-primary"><i class="icon-facebook"></i> Connect with Facebook</button>
+					<% } %>
 				</div>
-				<div class="tab-pane" id="sign-up-tab">
-					<div class="hero-unit">
-						<div class="six columns alpha">
-							<h2>Sign-Up</h2>
-							<form class="form-horizontal" id="signup-form" method="post">
-								<div class="control-group">
-									<input type="text" name="name" id="signup-name" value="" placeholder="Name"  />
-								</div>
-								<div class="control-group">
-									<input type="email" name="email" id="signup-email" value="" placeholder="Email"  />
-								</div>	
-								<div class="control-group">
-									<input type="password" name="password" id="signup-pw" value="" placeholder="Password"  />
-								</div>
-								<div class="control-group">
-									<label class="checkbox">
-										<input type="checkbox" name="newsletter" value="1" id="signup-newsletter"> Recieve Newsletter?
-									</label>
-								</div>
-								<div class="control-group">
-									<button type="submit" class="btn btn-primary btn-large">Create Account</button>
-								</div>
-							</form>
-						</div>
-						<div class="six columns alpha">
-							<h2>Signing up for your free account allows you to</h2>
-							<ul>
-								<li><p><i class="icon-ok"></i> Keep track of your todo list of places you want to go.</p></li>
-								<li><p><i class="icon-ok"></i> Recommend places for other users.</p></li>
-								<li><p><i class="icon-ok"></i> Add places that you know others will love.</p></li>
-							</ul>
-						</div>
-						<div class="clear"></div>
-					</div>
+				<div class="six columns omega">		
+					<h2>Joining allows you to</h2>
+					<ul>
+						<li><p><i class="icon-ok"></i> Keep track of your todo list of places you want to go.</p></li>
+						<li><p><i class="icon-ok"></i> Recommend places for other users.</p></li>
+						<li><p><i class="icon-ok"></i> Add places that you know others will love.</p></li>
+					</ul>
 				</div>
+				<div class="clear" />
 			</div>	
+			<div id="fb-root"></div>
 		</div>
 		</script>
 		<script type="text/template" id="add-template">
@@ -275,12 +239,23 @@
 		</script>
 		<script type="text/template" id="found-template">
 		<div class="view">
-			<div class="six columns alpha">
-				<input type="text" id="filter-by" placeholder="filter places...">
-			</div>
-			<div class="ten columns omega">
+			<form class="form-inline" id="find-places" method="post">
+				<label for="locationfilter">Where?</label>
+				<select name="locationfilter" id="locationfilter">
+					<option value="nelson-tasman">Nelson/Tasman</option>
+					<option value="wellington">Wellington</option>
+					<option value="demo">Demo</option>
+				</select>
+				<label for="typefilter">What?</label>
+				<input type="text" name="typefilter" id="typefilter" value="" placeholder="Keyword(s) - comma seperated"  />
+				<button type="submit" class="btn btn-primary">Find New Places</button>
+			</form>
+			<!--<div class="six columns alpha">
+				<input type="text" id="filter-by" placeholder="filter found places...">
+			</div>-->
+			<!--<div class="ten columns omega">
 				<a class="btn" href="#addplace/"><i class="icon-plus"></i> Add New Place</a>
-			</div>
+			</div>-->
 			<div class="clear" />
 			<ul id="places-list"></ul>
 		</div>
@@ -292,8 +267,8 @@
 		<script src="js/backbone-min.js"></script>
 		<script src="js/backbone_offline.js"></script>
 		<script src="js/jquery.cookie.js"></script>
+		<script src="js/FacebookUser.js"></script>
 		<script src="js/places.js"></script>
 		<script src="http://maps.google.com/maps/api/js?sensor=true"></script>
-		<script src="//connect.facebook.net/en_US/all.js"></script>
 	</body>
 </html>

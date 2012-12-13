@@ -3,7 +3,7 @@ require_once 'config.php';
 class User {
 	public $userData;
 
-	static $FIELDS = array('name', 'email','password','newsletter');
+	static $FIELDS = array('name', 'email','newsletter');
 
 	function __construct(){
 		$this->userData = new UserData();
@@ -11,24 +11,6 @@ class User {
 
 	function get($id=NULL) {
 		return $this->userData->get($id) ;
-	}
-	
-	/**
-	* @url POST /login/
-	*/
-	function login($request_data=NULL){
-		
-		$email = mysql_escape_string($request_data['email']);
-		$pw = mysql_escape_string($request_data['password']);
-		
-		return $this->userData->login($email,$pw);
-	}
-	
-	/**
-	* @url GET /email/:email/
-	*/
-	function getByEmail($email=NULL) {
-		return $this->userData->getByEmail($email);
 	}
 	
 	/**
