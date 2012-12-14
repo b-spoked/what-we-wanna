@@ -26,7 +26,7 @@ class UserData
     {
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
-            $sql = 'SELECT id, name, email, thirdparty_id, newsletter FROM user WHERE id = ' . mysql_escape_string(
+            $sql = 'SELECT id, name, email, thumbnail, newsletter FROM user WHERE id = ' . mysql_escape_string(
             $id);
             return $this->id2int($this->db->query($sql)
                 ->fetch());
@@ -39,56 +39,6 @@ class UserData
             throw new RestException(501, 'MySQL: ' . $e->getMessage());
         }
     }
-    
-    
-    function getByEmail($email, $installTableOnFailure = FALSE){
-        $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        try {
-            
-            $stmt = $this->db->query("SELECT id, name, thirdparty_id FROM user WHERE email = '{$email}'");
-            return $this->id2int($stmt->fetchAll());
-            
-        } catch (PDOException $e) {
-            if (! $installTableOnFailure && $e->getCode() == '42S02') {
-//SQLSTATE[42S02]: Base table or view not found: 1146 Table 'authors' doesn't exist
-                $this->install();
-                return $this->getByEmail($email, TRUE);
-            }
-            throw new RestException(501, 'MySQL: ' . $e->getMessage());
-        }
-    }
-    
-   function getIdFromThirdpartyId($thirdparty_id, $installTableOnFailure = FALSE){
-        $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        try {
-            
-	    $queryString = "SELECT id FROM user WHERE thirdparty_id = '{$thirdparty_id}'"; 
-	    $usersId = $this->id2int($this->db->query($queryString)->fetch());
-	    //insert dummy record
-	    if ($usersId){
-		//return $usersId;
-	    }else {
-		
-		$sql = "INSERT INTO user (thirdparty_id,name,email,newsletter,updated_at) VALUES ('$thirdparty_id', 'empty', 'empty', 'false', NOW())";  
-    
-		if (!$this->db->query($sql)){
-		    return FALSE;
-		}
-		
-		$usersId = $this->id2int($this->db->query($queryString)->fetch());
-	
-	    }
-	    return $usersId;
-	
-        } catch (PDOException $e) {
-            if (! $installTableOnFailure && $e->getCode() == '42S02') {
-//SQLSTATE[42S02]: Base table or view not found: 1146 Table 'authors' doesn't exist
-                $this->install();
-                return $this->getIdFromThirdpartyId($thirdparty_id, TRUE);
-            }
-            throw new RestException(501, 'MySQL: ' . $e->getMessage());
-        }
-    }	
     
     function getTodos($id, $installTableOnFailure = FALSE){
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -148,12 +98,13 @@ class UserData
 	
         $id= mysql_escape_string($rec['id']);
         $name = mysql_escape_string($rec['name']);
+        $thumbnail = mysql_escape_string($rec['thumbnail']);
         $email = mysql_escape_string($rec['email']);
         $newsletter= mysql_escape_string($rec['newsletter']);
         $todos = $rec['todos'];
         $recommended = $rec['recommended'];
 	
-        $sql = "INSERT INTO user (id,name,email,newsletter,updated_at) VALUES ('$id', '$name', '$email',' $newsletter', NOW())";  
+        $sql = "INSERT INTO user (id,name,email,newsletter,thumbnail,updated_at) VALUES ('$id', '$name', '$email','$thumbnail','$newsletter', NOW())";  
     
 	if (!$this->db->query($sql)){
             return FALSE;
@@ -177,10 +128,11 @@ class UserData
 	$name = mysql_escape_string($rec['name']);
         $email = mysql_escape_string($rec['email']);
         $newsletter= mysql_escape_string($rec['newsletter']);
+        $thumbnail = mysql_escape_string($rec['thumbnail']);
         $todos = $rec['todos'];
         $recommended = $rec['recommended'];
 	
-        $sql = "UPDATE user SET name = '$name', email ='$email', newsletter ='$newsletter', updated_at=NOW() WHERE id = $id";
+        $sql = "UPDATE user SET name = '$name', email ='$email', thumbnail = '$thumbnail', newsletter ='$newsletter', updated_at=NOW() WHERE id = $id";
         
 	if (! $this->db->query($sql)){
             return FALSE;
@@ -242,6 +194,7 @@ class UserData
             id INT PRIMARY KEY ,
             name TEXT NOT NULL ,
             email TEXT NOT NULL,
+	    thumbnail TEXT,
 	    newsletter BOOL NOT NULL,
             updated_at DATETIME
         );");

@@ -258,7 +258,9 @@ $( function( $ ) {
 	app.PlaceView = Backbone.View.extend({
 
 		//... is a list tag.
-		tagName:  'li',
+		tagName:  'div',
+		
+		className: 'span4 well well-small',
 
 		// Cache the template function for a single item.
 		template: _.template( $('#place-template').html() ),
@@ -596,7 +598,7 @@ $( function( $ ) {
 					//check is in users
 					if(!app.Users.get(app.BrowsingUserSession.get('id'))){
 						
-						var authenticatedUser = new User({sid:app.AuthenticatedUser.get('id'),
+						var authenticatedUser = new User({id:app.AuthenticatedUser.get('id'),
 									name:app.AuthenticatedUser.get('name'),
 									email:'todo',
 									thumbnail:app.AuthenticatedUser.get('pictures').square});
@@ -608,7 +610,7 @@ $( function( $ ) {
 				}else{
 					
 					//create user
-					var authenticatedUser = new User({sid:app.AuthenticatedUser.get('id'),
+					var authenticatedUser = new User({id:app.AuthenticatedUser.get('id'),
 										name:app.AuthenticatedUser.get('name'),
 										email:'todo',
 										thumbnail:app.AuthenticatedUser.get('pictures').square});

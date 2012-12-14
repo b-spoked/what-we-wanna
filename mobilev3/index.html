@@ -4,8 +4,7 @@
 	<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 		<title>What We Wanna: Families</title>
-		<link rel="stylesheet" href="stylesheets/base.css">
-		<link rel="stylesheet" href="stylesheets/skeleton.css">
+		<link rel="stylesheet" href="stylesheets/bootstrap-responsive.min.css" />
 		<link rel="stylesheet" href="stylesheets/font-awesome.css" />
 		<link rel="stylesheet" href="stylesheets/bootstrap.min.css" />
 		<script>
@@ -32,7 +31,7 @@
 				
 			</section>
 			<div class="container">
-				<div class="sixteen columns">	
+				<div class="row">	
 					<section id="main">			  
 					</section>
 				</div>
@@ -62,21 +61,13 @@
 			</div>
 		</script>
 		<script type="text/template" id="place-template">
-			<div class="view">
-				<div id="place_<%= id %>" class="note">
-					<div class="six columns alpha">
-						<h5><%= name %></h5>
-						<blockquote>
-							<p><%= description %></p>
-						</blockquote>
-					</div>
-					<div class="six columns omega">
-							<p><%= address %></p>
+			<div id="place_<%= id %>">
+						<h3><%= name %></h3>
+							<p class="lead"><%= description %></p>
+							<address><%= address %></address>
 							<p><em><strong><%= distance %>km</strong> away</em></p>
 							<button class="recommend-by btn btn-link">Recommended By <span class="badge badge-success">2</span></button>
 							<button class="on-todo-list btn btn-link">On Todo List <span class="badge badge-success">2</span></button>
-					</div>
-					<div class="two columns">
 					
 						<% if(canRemoveRecommended) { %>
 							<div class="btn-group btn-group-vertical" data-toggle="buttons-checkbox">
@@ -91,33 +82,21 @@
 						<% } else { %>
 							<div class="btn-group btn-group-vertical" data-toggle="buttons-checkbox">
 								<button class="map btn"><i class="icon-map-marker"></i> Show Map</button>
-								<button class="comments btn"><i class="icon-comments"></i> Comments</button>
 								<button class="bookmark btn"><i class="icon-star"></i> To-Do</button>
 								<button class="recommend btn"><i class="icon-thumbs-up"></i> Recommend</button>
 							</div>
 						<% } %>
-						
-					</div>
-				</div>
-				<div id="recommended_<%= id %>" class="six columns offset-by-six" style="display:none;">
-					<blockquote>
-						<p>Users that have recommended this</p>
-					</blockquote>
+				<div id="recommended_<%= id %>" style="display:none;">
+					<p class="lead">Users that have recommended this</p>
 					<ul id="recommended_<%= id %>_users"></ul>
 				</div>
-				<div id="todo_<%= id %>" class="six columns offset-by-six" style="display:none;">
-					<blockquote>
-						<p>Users that this on thier todo list</p>
-					</blockquote>
+				<div id="todo_<%= id %>" style="display:none;">
+					<p class="lead">Users that this on thier todo list</p>
 					<ul id="todo_<%= id %>_users"></ul>
 				</div>
-				<div id="comments_<%= id %>" class="sixteen columns alpha" style="display:none;">
-				</div>
-				<div id="map_<%= id %>_canvas" class="sixteen columns alpha" style="height:320px; display:none;">
+				<div id="map_<%= id %>_canvas" style="height:320px; display:none;">
 				</div>
 			</div>
-			<div class="clear"></div>
-			<hr />
 		</script>
 		<script type="text/template" id="related-user-template">
 			<a class="btn btn-link" href="#user/<%= id %>"><i class="icon-user"></i> <%= name %></a>
@@ -257,7 +236,7 @@
 				<a class="btn" href="#addplace/"><i class="icon-plus"></i> Add New Place</a>
 			</div>-->
 			<div class="clear" />
-			<ul id="places-list"></ul>
+			<div id="places-list"></div>
 		</div>
 		</script>
 		<!-- App Source -->	
