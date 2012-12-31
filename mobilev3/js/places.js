@@ -107,9 +107,11 @@ $( function( $ ) {
 		defaults: {
 			id:'',
 			sid:'',
+			thirdparty_id:'',
 			name: '',
 			email: '',
 			thumbnail: '',
+			newsletter:false,
 			updated_at : '',
 			todos: [],
 			recommended: [],
@@ -598,7 +600,7 @@ $( function( $ ) {
 					//check is in users
 					if(!app.Users.get(app.BrowsingUserSession.get('id'))){
 						
-						var authenticatedUser = new User({id:app.AuthenticatedUser.get('id'),
+						var authenticatedUser = new User({thirdparty_id:app.AuthenticatedUser.get('id'),
 									name:app.AuthenticatedUser.get('name'),
 									email:'todo',
 									thumbnail:app.AuthenticatedUser.get('pictures').square});
@@ -610,7 +612,7 @@ $( function( $ ) {
 				}else{
 					
 					//create user
-					var authenticatedUser = new User({id:app.AuthenticatedUser.get('id'),
+					var authenticatedUser = new User({thirdparty_id:app.AuthenticatedUser.get('id'),
 										name:app.AuthenticatedUser.get('name'),
 										email:'todo',
 										thumbnail:app.AuthenticatedUser.get('pictures').square});
@@ -772,7 +774,486 @@ $( function( $ ) {
 		search: function(e) {
 			var letters = $("#filter-by").val();
 			this.addAll(app.Places.search(letters));
+		},
+		visualise : function(){
+
+			var w = 1280,
+				h = 800,
+				r = 720,
+				x = d3.scale.linear().range([0, r]),
+				y = d3.scale.linear().range([0, r]),
+				node,
+				root;
+			
+			var pack = d3.layout.pack()
+				.size([r, r])
+				.value(function(d) { return d.size; })
+			
+			var vis = d3.select("body").insert("svg:svg", "h2")
+				.attr("width", w)
+				.attr("height", h)
+			  .append("svg:g")
+				.attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")");
+			
+			d3.json("flare.json", function(data) {
+			  node = root = data;
+
+			var nodes = pack.nodes(root);
+
+			vis.selectAll("circle")
+				.data(nodes)
+			  .enter().append("svg:circle")
+				.attr("class", function(d) { return d.children ? "parent" : "child"; })
+				.attr("cx", function(d) { return d.x; })
+				.attr("cy", function(d) { return d.y; })
+				.attr("r", function(d) { return d.r; })
+				.on("click", function(d) { return zoom(node == d ? root : d); });
+		  
+			vis.selectAll("text")
+				.data(nodes)
+			  .enter().append("svg:text")
+				.attr("class", function(d) { return d.children ? "parent" : "child"; })
+				.attr("x", function(d) { return d.x; })
+				.attr("y", function(d) { return d.y; })
+				.attr("dy", ".35em")
+				.attr("text-anchor", "middle")
+				.style("opacity", function(d) { return d.r > 20 ? 1 : 0; })
+				.text(function(d) { return d.name; });
+
+				d3.select(window).on("click", function() { zoom(root); });
+			});
+
+		},
+		zoomVisualisation : function(d,i){
+			var k = r / d.r / 2;
+			x.domain([d.x - d.r, d.x + d.r]);
+			y.domain([d.y - d.r, d.y + d.r]);
+		  
+			var t = vis.transition()
+				.duration(d3.event.altKey ? 7500 : 750);
+		  
+			t.selectAll("circle")
+				.attr("cx", function(d) { return x(d.x); })
+				.attr("cy", function(d) { return y(d.y); })
+				.attr("r", function(d) { return k * d.r; });
+		  
+			t.selectAll("text")
+				.attr("x", function(d) { return x(d.x); })
+				.attr("y", function(d) { return y(d.y); })
+				.style("opacity", function(d) { return k * d.r > 20 ? 1 : 0; });
+		  
+			node = d;
+			d3.event.stopPropagation();
 		}
+		
+	});
+	
+	app.VisualisePlacesView = Backbone.View.extend({
+
+		visualisePlacesTemplate: _.template( $('#visualise-places-template').html()),
+
+		initialize: function() {
+			$(this.el).html(this.visualisePlacesTemplate());
+		},
+		render: function() {
+			$(this.el).hide();
+		},
+		close: function() {
+			this.remove();
+			this.unbind();
+		},
+		onShow: function() {
+			this.visualise(this.loadResults());
+			$(this.el).show(500);
+			$('#add-log').show(500);
+		},
+		setDistance: function( place ) {
+			place.set({
+				distance: this.distanceFromUser(place,app.BrowsingUserSession.get("latitude"),app.BrowsingUserSession.get("longitude"))
+			});
+			return place;
+		},
+		distanceFromUser : function(place,userLatitude,userLongitude) {
+			var earthsRadius = 6371; // Radius of the earth in km
+			var differenceInLat = this.toRad(place.get("latitude")-userLatitude);  // Javascript functions in radians
+			var differenceInLng = this.toRad(place.get("longitude")-userLongitude);
+			var a = Math.sin(differenceInLat/2) * Math.sin(differenceInLat/2) +
+			Math.cos(this.toRad(place.get("longitude"))) * Math.cos(this.toRad(userLongitude)) *
+			Math.sin(differenceInLng/2) * Math.sin(differenceInLng/2);
+			var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+			var distance = Math.round(earthsRadius * c); // Distance in km
+			return distance;
+		},
+		toRad : function(Value) {
+			return Value * Math.PI / 180;
+		},
+		
+		loadResults: function () {
+			var self = this;
+			var data = new Array(); 
+			app.Places.fetch();
+			
+			app.Places.forEach(function(place) {
+				var locatedPlace = self.setDistance(place);
+				data.push(locatedPlace.toJSON());
+			});
+			
+			return data;
+		},
+		
+		visualise3 : function(data){
+			
+			var diameter = 960,
+				format = d3.format(",d"),
+				color = d3.scale.category20c();
+			
+			var bubble = d3.layout.pack()
+				.sort(null)
+				.size([diameter, diameter])
+				.padding(1.5);
+			
+			var svg = d3.select("#places-visual").append("svg")
+				.attr("width", diameter)
+				.attr("height", diameter)
+				.attr("class", "bubble");
+				
+			var nodes = [];
+			
+			data.forEach(function(place) {
+				var node = {
+					id : place.sid,
+					name: place.name,
+					distance : place.distance,
+					value:  (place.distance > 0) ? (10 / place.distance) : 10 
+				};
+				
+				nodes.push(node);
+				
+			});
+			
+			var placeNodes = {children: nodes};
+
+			var node = svg.selectAll(".node")
+				  .data(bubble.nodes(placeNodes))
+				.enter().append("g")
+				  .attr("class", "node")
+				  .attr("transform",
+						function(d) {
+							return "translate(" + d.x + "," + d.y + ")";
+							});
+			
+			  node.append("title")
+				  .text(function(d) { return d.name + ": " + d.distance; });
+			
+			  node.append("circle")
+				  .attr("r", function(d) { return d.r; })
+				  .style("fill", function(d) { return color(d.distance); });
+			
+			  node.append("text")
+				  .attr("dy", ".3em")
+				  .style("text-anchor", "middle")
+				  .text(function(d) { return d.name; });
+				  
+			node.on("click", this.showPlace);	 
+		},
+		
+		visualise4 : function(data){
+			var width = 960,
+				height = 500,
+				color = d3.scale.category20c(),
+				distance_centers = {
+					"1": { x: width / 3, y: height / 2},
+					"5": { x: width / 2,y: height / 2},
+					"15": { x: 2 * width / 3, y: height / 2}
+				},
+				nodes = [],
+				links = [],
+				_this = this;
+			
+			var svg = d3.select("#places-visual").append("svg")
+				.attr("width", width)
+				.attr("height", height);
+			
+			data.forEach(function(place) {
+				var node = {
+					id : place.sid,
+					name: place.name,
+					distance : place.distance,
+					value:  (place.distance > 0) ? (10 / place.distance) : 10 
+				};
+				
+				nodes.push(node);	
+			});	
+				
+			var force = d3.layout.force()
+				.gravity(.2)
+				.distance(100)
+				.charge(-200)
+				.size([width, height]);
+			
+			force
+				  .nodes(nodes)
+				  .links(links)
+				  .start();
+			
+			  var link = svg.selectAll(".link")
+				  .data(links)
+				.enter().append("line")
+				  .attr("class", "link");
+			
+			  var node = svg.selectAll(".node")
+				  .data(nodes)
+				.enter().append("g")
+				  .attr("class", "node")
+				  .call(force.drag);
+			
+			  /*node.append("image")
+				  .attr("xlink:href", "https://github.com/favicon.ico")
+				  .attr("x", -8)
+				  .attr("y", -8)
+				  .attr("width", 32)
+				  .attr("height", 32);*/
+				
+				node.append("circle")
+				  .attr("r", function(d) { return d.r; })
+				  .style("fill", function(d) { return color(d.distance); });	  
+			
+				node.append("text")
+				  .attr("dx", 12)
+				  .attr("dy", ".35em")
+				  .text(function(d) { return d.name });
+				  
+				node.on("click", this.showPlace);
+				
+				force.on("tick", function(e) {
+					// Push nodes toward their designated focus.
+					var k = 1.1 * e.alpha;
+					var range;
+					
+					
+					nodes.forEach(function(node) {
+						if(node.distance <= 1){
+							range = 1;
+						}else if(node.distance > 1 && node.distance <= 5){
+							range = 5;
+						}else{
+							range = 15;
+						}
+						
+						node.y += (distance_centers[range].y - node.y) * k;
+						node.x += (distance_centers[range].x - node.x) * k;
+						console.log(node);
+					});
+					
+					svg.selectAll("node")
+						.attr("cx", function(d) { return d.x; })
+						.attr("cy", function(d) { return d.y; });
+					
+				});
+				
+				force.start();
+		},
+		
+		visualise:function(data){
+			var width = 960,
+				height = 500,
+				fill = d3.scale.category20c(),
+				distance_centers = {
+					"1": { x: 150, y: 150},
+					"5": { x: 350, y: 250},
+					"15": { x: 700, y: 400}
+				},
+				nodes = [];
+				
+			var vis = d3.select("#places-visual").append("svg:svg")
+				.attr("width",width)
+				.attr("height",height);
+			
+			var force = d3.layout.force()
+				.nodes(nodes)
+				.links([])
+				.gravity(0)
+				.size([width, height]);
+			
+			data.forEach(function(place) {
+				var node = {
+					id : place.sid,
+					name: place.name,
+					distance : place.distance,
+					value:  (place.distance > 0) ? (10 / place.distance) : 10 
+				};
+				
+				nodes.push(node);	
+			});
+			
+			force.on("tick", function(e) {
+				
+				// Push nodes toward their designated focus.
+				var k = .1 * e.alpha;
+				nodes.forEach(function(o, i) {
+					if(o.distance <= 1){
+							range = 1;
+						}else if(o.distance > 1 && o.distance <= 5){
+							range = 5;
+						}else{
+							range = 15;
+						}
+						
+						o.y += (distance_centers[range].y - o.y) * k;
+						o.x += (distance_centers[range].x - o.x) * k;
+						//console.log(o);
+				});
+			
+				vis.selectAll("circle.node")
+					.attr("cx", function(d) { return d.x; })
+					.attr("cy", function(d) { return d.y; });
+			});
+			
+			force.start();
+			
+			vis.selectAll("circle.node")
+				.data(nodes)
+				.enter().append("svg:circle")
+				.attr("class", "node")
+				.attr("cx", function(d) { return d.x; })
+				.attr("cy", function(d) { return d.y; })
+				.attr("r", 8)
+				.on("click",this.showPlace)
+				.style("fill", function(d) { return fill(d.distance); })
+				.style("stroke", function(d) { return d3.rgb(fill(d.distance)).darker(2); })
+				.style("stroke-width", 1.5)
+				.call(force.drag);
+
+		},
+		
+		showPlace: function(node){
+			alert(node.id+" was clicked");
+		},
+		
+		visualise2 : function(data){
+			var w = 960, h = 500;
+
+			var labelDistance = 0;
+
+			var vis = d3.select("#places-visual").append("svg:svg").attr("width", w).attr("height", h);
+
+			var nodes = [];
+			var labelAnchors = [];
+			var labelAnchorLinks = [];
+			var links = [];
+			
+			data.forEach(function(place) {
+				var node = {
+					label :  place.name,
+					proximity : place.distance
+				};
+				nodes.push(node);
+				labelAnchors.push({
+					node : node
+				});
+				labelAnchors.push({
+					node : node
+				});
+			});
+
+	
+
+			for(var i = 0; i < nodes.length; i++) {
+				for(var j = 0; j < i; j++) {
+					if(Math.random() > .95)
+						links.push({
+							source : i,
+							target : j,
+							weight : Math.random()
+						});
+				}
+				labelAnchorLinks.push({
+					source : i * 2,
+					target : i * 2 + 1,
+					weight : 1
+				});
+			};
+
+			var force = d3.layout.force().size([w, h]).nodes(nodes).links(links).gravity(1).linkDistance(50).charge(-3000).linkStrength(function(x) {
+				return x.weight * 10
+			});
+
+			force.start();
+
+			var force2 = d3.layout.force().nodes(labelAnchors).links(labelAnchorLinks).gravity(0).linkDistance(0).linkStrength(8).charge(-100).size([w, h]);
+			force2.start();
+
+			var link = vis.selectAll("line.link").data(links).enter().append("svg:line").attr("class", "link").style("stroke", "#CCC");
+
+			var node = vis.selectAll("g.node").data(force.nodes()).enter().append("svg:g").attr("class", "node");
+			node.append("svg:circle").attr("r", 5).style("fill", "#555").style("stroke", "#FFF").style("stroke-width", 3);
+			node.call(force.drag);
+
+
+			var anchorLink = vis.selectAll("line.anchorLink").data(labelAnchorLinks)//.enter().append("svg:line").attr("class", "anchorLink").style("stroke", "#999");
+
+			var anchorNode = vis.selectAll("g.anchorNode").data(force2.nodes()).enter().append("svg:g").attr("class", "anchorNode");
+			anchorNode.append("svg:circle").attr("r", 0).style("fill", "#FFF");
+				anchorNode.append("svg:text").text(function(d, i) {
+				return i % 2 == 0 ? "" : d.node.label
+			}).style("fill", "#555").style("font-family", "Arial").style("font-size", 12);
+
+			var updateLink = function() {
+				this.attr("x1", function(d) {
+					return d.source.x;
+				}).attr("y1", function(d) {
+					return d.source.y;
+				}).attr("x2", function(d) {
+					return d.target.x;
+				}).attr("y2", function(d) {
+					return d.target.y;
+				});
+
+			}
+
+			var updateNode = function() {
+				this.attr("transform", function(d) {
+					return "translate(" + d.x + "," + d.y + ")";
+				});
+
+			}
+
+
+			force.on("tick", function() {
+
+				force2.start();
+
+				node.call(updateNode);
+
+				anchorNode.each(function(d, i) {
+					if(i % 2 == 0) {
+						d.x = d.node.x;
+						d.y = d.node.y;
+					} else {
+						var b = this.childNodes[1].getBBox();
+
+						var diffX = d.x - d.node.x;
+						var diffY = d.y - d.node.y;
+
+						var dist = Math.sqrt(diffX * diffX + diffY * diffY);
+
+						var shiftX = b.width * (diffX - dist) / (dist * 2);
+						shiftX = Math.max(-b.width, Math.min(0, shiftX));
+						var shiftY = 5;
+						this.childNodes[1].setAttribute("transform", "translate(" + shiftX + "," + shiftY + ")");
+					}
+				});
+
+
+				anchorNode.call(updateNode);
+
+				link.call(updateLink);
+				anchorLink.call(updateLink);
+
+			});
+			
+		}
+		
 	});
 
 	var ApplicationRouter = Backbone.Router.extend({
@@ -808,7 +1289,8 @@ $( function( $ ) {
 			if(search){
 				app.Places.storage.sync.full();
 			}
-			RegionManager.show(new app.PlacesView());
+			//RegionManager.show(new app.PlacesView());
+			RegionManager.show(new app.VisualisePlacesView());
 		},
 		showUser: function(userId) {
 			if(userId){

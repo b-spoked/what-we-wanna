@@ -96,7 +96,7 @@ class UserData
     function insert ($rec)
     {
 	
-        $id= mysql_escape_string($rec['id']);
+        $thirdparty_id= mysql_escape_string($rec['thirdparty_id']);
         $name = mysql_escape_string($rec['name']);
         $thumbnail = mysql_escape_string($rec['thumbnail']);
         $email = mysql_escape_string($rec['email']);
@@ -104,7 +104,7 @@ class UserData
         $todos = $rec['todos'];
         $recommended = $rec['recommended'];
 	
-        $sql = "INSERT INTO user (id,name,email,newsletter,thumbnail,updated_at) VALUES ('$id', '$name', '$email','$thumbnail','$newsletter', NOW())";  
+        $sql = "INSERT INTO user (thirdparty_id,name,email,newsletter,thumbnail,updated_at) VALUES ('$thirdparty_id', '$name', '$email','$newsletter','$thumbnail', NOW())";  
     
 	if (!$this->db->query($sql)){
             return FALSE;
@@ -127,15 +127,18 @@ class UserData
     {
 	$name = mysql_escape_string($rec['name']);
         $email = mysql_escape_string($rec['email']);
+        $thirdparty_id= mysql_escape_string($rec['thirdparty_id']);
         $newsletter= mysql_escape_string($rec['newsletter']);
         $thumbnail = mysql_escape_string($rec['thumbnail']);
         $todos = $rec['todos'];
         $recommended = $rec['recommended'];
 	
-        $sql = "UPDATE user SET name = '$name', email ='$email', thumbnail = '$thumbnail', newsletter ='$newsletter', updated_at=NOW() WHERE id = $id";
+        $sql = "UPDATE user SET name = '$name', email ='$email', thirdparty_id = '$thirdparty_id', thumbnail = '$thumbnail', newsletter ='$newsletter', updated_at=NOW() WHERE id = $id";
         
 	if (! $this->db->query($sql)){
-            return FALSE;
+	    
+	    $rec['id'] = $id;
+            $this->insert($rec);
 	}
 	
 	if($todos){
@@ -192,6 +195,7 @@ class UserData
         $this->db->exec(
         "CREATE TABLE user (
             id INT PRIMARY KEY ,
+	    thirdparty_id INT NOT NULL,
             name TEXT NOT NULL ,
             email TEXT NOT NULL,
 	    thumbnail TEXT,
