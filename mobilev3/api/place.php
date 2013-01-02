@@ -4,7 +4,7 @@ class Place {
 	public $placeData;
 	public $commentData;
 
-	static $FIELDS = array('name', 'description','address','latitude','longitude','recommended');
+	static $FIELDS = array('name', 'description','address','classification','labels','latitude','longitude','recommended');
 
 	function __construct(){
 		$this->placeData = new PlaceData();

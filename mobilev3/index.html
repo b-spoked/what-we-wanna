@@ -242,18 +242,47 @@
 		<script type="text/template" id="visualise-places-template">
 		<div class="view">
 			<form class="form-inline" id="find-places" method="post">
-				<label for="locationfilter">Where?</label>
 				<select name="locationfilter" id="locationfilter">
+					<option>Where are you?</option>
 					<option value="nelson-tasman">Nelson/Tasman</option>
 					<option value="wellington">Wellington</option>
 					<option value="demo">Demo</option>
 				</select>
-				<label for="typefilter">What?</label>
-				<input type="text" name="typefilter" id="typefilter" value="" placeholder="Keyword(s) - comma seperated"  />
-				<button type="submit" class="btn btn-primary">Find New Places</button>
 			</form>
+			<div id="modal-place-detail"></div>
 			<div class="clear" />
 			<div id="places-visual"></div>
+		</div>
+		</script>
+		<script type="text/template" id="place-detail-template">
+		<div id="place_<%= id %>" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+				<div class="modal-header">
+					<h3 id="myModalLabel"><%= name%></h3>
+				</div>
+				<div class="modal-body">
+					<h4>Description</h4>							
+					<p><%= description%></p>
+					<h4>Address</h4>						
+					<p><%= address%></p>
+					<p>About <%= distance%> km away</p>
+					<h4>Labels</h4>
+					<p><%= labels %></p>
+				</div>
+				<div class="modal-footer">
+					<% if(canRemoveRecommended) { %>
+						<button class="map btn"><i class="icon-map-marker"></i> Show Map</button>
+						<button class="remove-recommend btn"><i class="icon-thumbs-up"></i> Remove Recommend</button>
+					<% } else if(canRemoveTodo) { %>
+						<button class="map btn"><i class="icon-map-marker"></i> Show Map</button>
+						<button class="remove-bookmark btn"><i class="icon-star"></i> Remove To-Do</button>
+						
+					<% } else { %>
+						<button class="map btn"><i class="icon-map-marker"></i> Show Map</button>
+						<button class="bookmark btn"><i class="icon-star"></i> To-Do</button>
+						<button class="recommend btn"><i class="icon-thumbs-up"></i> Recommend</button>
+					<% } %>
+					<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+				</div>
 		</div>
 		</script>
 		<!-- App Source -->	
