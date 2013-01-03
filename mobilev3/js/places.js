@@ -839,15 +839,17 @@ $( function( $ ) {
 				height = 500,
 				fill = d3.scale.category20c(),
 				distance_centers = {
-					"1": { x: 150, y: 150},
-					"5": { x: 350, y: 250},
-					"15": { x: 700, y: 400}
+					"1": { x: 160, y: 150},
+					"2": { x: width / 2, y: 250},
+					"3": { x: width - 160, y: 400}
 				},
 				nodes = [];
 				
 			var vis = d3.select("#places-visual").append("svg:svg")
 				.attr("width",width)
 				.attr("height",height);
+				
+			this.createDistanceKey(vis,width);	
 			
 			var force = d3.layout.force()
 				.nodes(nodes)
@@ -860,23 +862,26 @@ $( function( $ ) {
 					id : place.id,
 					name: place.name,
 					distance : place.distance,
+					classification : place.classification,
 					value:  (place.distance > 0) ? (10 / place.distance) : 10 
 				};
 				
 				nodes.push(node);	
 			});
+			//Legend
+			//this.createClassificationsKey(vis,width,fill,nodes);
 			
 			force.on("tick", function(e) {
 				
 				// Push nodes toward their designated focus.
 				var k = .1 * e.alpha;
 				nodes.forEach(function(o, i) {
-					if(o.distance <= 1){
+					if(o.distance <= 2){
 						range = 1;
-					}else if(o.distance > 1 && o.distance <= 5){
-						range = 5;
+					}else if(o.distance > 2 && o.distance <= 10){
+						range = 2;
 					}else{
-						range = 15;
+						range = 3;
 					}
 						
 					o.y += (distance_centers[range].y - o.y) * k;
@@ -897,11 +902,54 @@ $( function( $ ) {
 				.attr("cx", function(d) { return d.x; })
 				.attr("cy", function(d) { return d.y; })
 				.attr("r", 10)
+				.attr("data-legend",function(d) { return d.classification})
 				.on("click",this.showPlace)
 				.style("fill", function(d) { return fill(d.classification); })
 				.style("stroke", function(d) { return d3.rgb(fill(d.classification)).darker(2); })
 				.style("stroke-width", 1.5)
 				.call(force.drag);
+				
+			var legend = vis.append("g")
+				.attr("class","legend")
+				.attr("transform","translate(15,15)")
+				.style("font-size","16px")
+				.call(d3.legend);	
+		},
+		
+		createDistanceKey :function(vis,width){
+			var distances_x = {"< 2km ": 160, "2-10km": width / 2, "> 10km": width - 160},
+			distances_data = d3.keys(distances_x),
+			distances = vis.selectAll(".classification")
+				.data(distances_data);
+
+			distances.enter().append("text")
+				.attr("class", "classification")
+				.attr("x", function(d){ return distances_x[d] } )
+				.attr("y", 40)
+				.attr("text-anchor", "middle")
+				.text(function(d){ return d});
+		},
+		
+		createClassificationsKey :function(vis,width,fill,nodes){
+			
+			var legend = vis.selectAll(".legend")
+				.data(nodes)
+			  .enter().append("g")
+				.attr("class", "legend")
+				.attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+				
+			legend.append("rect")
+				.attr("x", width - 18)
+				.attr("width", 18)
+				.attr("height", 18)
+				.style("fill", function(d) { return fill(d.classification); })
+		  
+			legend.append("text")
+				.attr("x", width - 24)
+				.attr("y", 9)
+				.attr("dy", ".35em")
+				.style("text-anchor", "end")
+				.text(function(d) { return d.classification; });	
 		},
 		
 		showPlace: function(node){

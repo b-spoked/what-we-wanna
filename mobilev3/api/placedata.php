@@ -26,7 +26,7 @@ class PlaceData
     {
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
-            $sql = 'SELECT name, description, address, latitude, longitude, recommended, updated_at, id FROM place WHERE id = ' . mysql_escape_string(
+            $sql = 'SELECT name, description, address, latitude, longitude, classification, labels, updated_at, id FROM place WHERE id = ' . mysql_escape_string(
             $id);
             return $this->id2int($this->db->query($sql)
                 ->fetch());
@@ -70,7 +70,7 @@ class PlaceData
     {
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
-            $stmt = $this->db->query('SELECT name, description, address, latitude, longitude, recommended, updated_at, id FROM place');
+            $stmt = $this->db->query('SELECT name, description, address, latitude, longitude, classification, labels, updated_at, id FROM place');
             return $this->id2int($stmt->fetchAll());
         } catch (PDOException $e) {
             if (! $installTableOnFailure && $e->getCode() == '42S02') {
@@ -91,7 +91,7 @@ class PlaceData
 	$type = $values['typefilter'];
         
         try {
-            $query = "SELECT name, description, address, latitude, longitude, recommended, updated_at, id FROM place WHERE address LIKE '%{$location}%'";
+            $query = "SELECT name, description, address, latitude, longitude, classification, labels, updated_at, id FROM place WHERE address LIKE '%{$location}%'";
 	    
 	    if($type){
 		$query .= " AND name LIKE '%{$type}%' OR description LIKE '%{$type}%'";
@@ -116,12 +116,13 @@ class PlaceData
         $address = mysql_escape_string($rec['address']);
         $latitude = mysql_escape_string($rec['latitude']);
         $longitude = mysql_escape_string($rec['longitude']);
-        $recommended = mysql_escape_string($rec['recommended']);
+	$classification = mysql_escape_string($rec['classification']);
+	$labels = mysql_escape_string($rec['labels']);
         $updated_at = mysql_escape_string($rec['updated_at']);
         
         $user_id = 1;
 	//name, description, address, latitude, longitude, recommended, updated_at, id
-        $sql = "INSERT INTO place (name,description,address,latitude,longitude, recommended,user_id,updated_at) VALUES ('$name', '$description','$address','$latitude','$longitude','$recommended','$user_id',NOW())";  
+        $sql = "INSERT INTO place (name,description,address,latitude,longitude,classification,labels,updated_at) VALUES ('$name', '$description','$address','$latitude','$longitude','$classification','$labels',NOW())";  
         if (! $this->db->query($sql))
             return FALSE;
         return $this->get($this->db->lastInsertId());
@@ -135,9 +136,10 @@ class PlaceData
         $address = mysql_escape_string($rec['address']);
         $latitude = mysql_escape_string($rec['latitude']);
         $longitude = mysql_escape_string($rec['longitude']);
-        $recommended = mysql_escape_string($rec['recommended']);
+	$classification = mysql_escape_string($rec['classification']);
+	$labels = mysql_escape_string($rec['labels']);
 	
-        $sql = "UPDATE place SET name = '$name', description ='$description', address ='$address', latitude ='$latitude',longitude ='$longitude', recommended='$recommended' updated_at=NOW() WHERE id = $id";
+        $sql = "UPDATE place SET name = '$name', description ='$description', address ='$address', latitude ='$latitude',longitude ='$longitude', classification='$classification',labels='$labels', updated_at=NOW() WHERE id = $id";
         if (! $this->db->query($sql))
             return FALSE;
         return $this->get($id);
@@ -190,7 +192,6 @@ class PlaceData
             address TEXT NOT NULL,
             latitude TEXT NOT NULL,
             longitude TEXT NOT NULL,
-            recommended INT,
             user_id INT,
             updated_at DATETIME
         );");
