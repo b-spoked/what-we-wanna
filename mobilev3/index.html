@@ -239,7 +239,25 @@
 			<div id="places-list"></div>
 		</div>
 		</script>
-		<script type="text/template" id="visualise-places-template">
+		<script type="text/template" id="places-table">
+		<table class="table table-bordered table-condensed">
+			<thead>
+				<tr>
+					<th>Distance</th>
+					<th>Classification</th>
+					<th>Name</th>
+				</tr>
+			</thead>
+			<tbody id="places-rows">
+			</tbody>
+		</table>
+		</script>
+		<script type="text/template" id="place-row">
+			<td><% if(distance) { %> <%= distance %> km <% } %> </td>
+			<td><% if(classification) { %> <%= classification %> <% } %></td>
+			<td><% if(name) { %> <a class="show" href="#"><%= name %> </a><% } %></td>
+		</script>
+		<script type="text/template" id="places-visualisation-template">
 		<div class="view">
 			<form class="form-inline" id="find-places" method="post">
 				<select name="locationfilter" id="locationfilter">
@@ -248,10 +266,12 @@
 					<option value="wellington">Wellington</option>
 					<option value="demo">Demo</option>
 				</select>
+				<button></button>
 			</form>
 			<div id="modal-place-detail"></div>
 			<div class="clear" />
 			<div id="places-visual"></div>
+			<div id="places-table"></div>
 		</div>
 		</script>
 		<script type="text/template" id="place-detail-template">

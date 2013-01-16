@@ -53,7 +53,7 @@ $( function( $ ) {
 		initialize : function() {
 			this.storage = new Offline.Storage('places', this, {
 				autoPush:true
-			} );
+			});
 		},
 		url: function () {
 
@@ -835,19 +835,19 @@ $( function( $ ) {
 		},
 		
 		visualise:function(data){
-			var width = 960,
-				height = 500,
+            
+			var width = 420,
+				height = 380,
 				fill = d3.scale.category20c(),
 				distance_centers = {
 					"1": { x: 160, y: 150},
 					"2": { x: width / 2, y: 250},
-					"3": { x: width - 160, y: 400}
+					"3": { x: width - 160, y: 350}
 				},
 				nodes = [];
 				
 			var vis = d3.select("#places-visual").append("svg:svg")
-				.attr("width",width)
-				.attr("height",height);
+                .attr("viewBox", "0 0 "+width+" "+height);
 				
 			this.createDistanceKey(vis,width);	
 			
